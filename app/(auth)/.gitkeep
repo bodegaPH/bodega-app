@@ -1,2 +1,0 @@
-// This file ensures the (auth) route group exists
-export {};
