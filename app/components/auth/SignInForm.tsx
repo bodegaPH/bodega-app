@@ -29,8 +29,7 @@ export default function SignInForm() {
       if (res?.error) {
         setError("Invalid email or password");
       } else {
-        router.push("/");
-        router.refresh();
+        router.push("/dashboard");
       }
     } catch (err) {
       setError("An unexpected error occurred");
