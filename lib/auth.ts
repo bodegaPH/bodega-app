@@ -67,7 +67,7 @@ export const authOptions: NextAuthOptions = {
   },
   providers,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         const role =
           (user as any).role ??
@@ -76,12 +76,17 @@ export const authOptions: NextAuthOptions = {
         token.id = (user as any).id ?? token.id;
         token.role = role;
       }
+      // Allow updating activeOrgId via update() call
+      if (trigger === "update" && session?.activeOrgId !== undefined) {
+        token.activeOrgId = session.activeOrgId;
+      }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role ?? "USER";
+        (session.user as any).activeOrgId = token.activeOrgId ?? null;
       }
       return session;
     },

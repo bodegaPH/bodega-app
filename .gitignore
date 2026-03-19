@@ -21,6 +21,6 @@ out/
 Thumbs.db
 
 # Project
-.agent/
+.agents/
 .opencode/
 openspec/

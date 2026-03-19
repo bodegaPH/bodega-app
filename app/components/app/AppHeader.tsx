@@ -1,4 +1,13 @@
 import SignOutButton from "@/app/components/auth/SignOutButton";
+import OrgSwitcher from "@/app/components/app/OrgSwitcher";
+import { MembershipRole } from "@prisma/client";
+
+interface Org {
+  id: string;
+  name: string;
+  slug: string | null;
+  role: MembershipRole;
+}
 
 interface AppHeaderProps {
   user: {
@@ -6,16 +15,21 @@ interface AppHeaderProps {
     email?: string | null;
     image?: string | null;
   };
+  activeOrg: Org;
+  userOrgs: Org[];
   title?: string;
 }
 
-export default function AppHeader({ user, title = "Dashboard" }: AppHeaderProps) {
+export default function AppHeader({ user, activeOrg, userOrgs, title = "Dashboard" }: AppHeaderProps) {
   return (
     <header className="h-16 shrink-0 flex items-center justify-between px-6 bg-zinc-950/80 backdrop-blur-xl border-b border-white/5">
-      {/* Page title */}
+      {/* Left: Page title */}
       <h1 className="text-sm font-semibold text-white">{title}</h1>
 
-      {/* User info + signout */}
+      {/* Center: Org Switcher */}
+      <OrgSwitcher activeOrg={activeOrg} userOrgs={userOrgs} />
+
+      {/* Right: User info + signout */}
       <div className="flex items-center gap-4">
         <div className="text-right hidden sm:block">
           {user.name && (
