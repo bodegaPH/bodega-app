@@ -7,12 +7,14 @@ import {
   Package,
   ArrowLeftRight,
   MapPin,
+  Boxes,
   Settings,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Inventory", href: "/inventory", icon: Package },
+  { label: "Items", href: "/items", icon: Boxes },
   { label: "Locations", href: "/locations", icon: MapPin },
   { label: "Movements", href: "/movements", icon: ArrowLeftRight },
   { label: "Settings", href: "/settings", icon: Settings },
