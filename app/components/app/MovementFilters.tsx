@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 interface MovementFiltersProps {
@@ -9,6 +9,8 @@ interface MovementFiltersProps {
 
 export default function MovementFilters({ items }: MovementFiltersProps) {
   const router = useRouter();
+  const params = useParams();
+  const orgId = params.orgId as string;
   const searchParams = useSearchParams();
 
   const [itemId, setItemId] = useState(searchParams.get("itemId") ?? "");
@@ -18,19 +20,19 @@ export default function MovementFilters({ items }: MovementFiltersProps) {
   function handleApplyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const params = new URLSearchParams();
-    if (itemId) params.set("itemId", itemId);
-    if (from) params.set("from", from);
-    if (to) params.set("to", to);
+    const urlParams = new URLSearchParams();
+    if (itemId) urlParams.set("itemId", itemId);
+    if (from) urlParams.set("from", from);
+    if (to) urlParams.set("to", to);
 
-    router.push(`/movements?${params.toString()}`);
+    router.push(`/${orgId}/movements?${urlParams.toString()}`);
   }
 
   function handleClearFilters() {
     setItemId("");
     setFrom("");
     setTo("");
-    router.push("/movements");
+    router.push(`/${orgId}/movements`);
   }
 
   const hasFilters = Boolean(itemId || from || to);

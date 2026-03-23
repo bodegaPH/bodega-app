@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { switchOrg, createOrg } from "@/lib/actions/org";
 import { MembershipRole } from "@prisma/client";
 
@@ -66,7 +65,6 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
   const [createError, setCreateError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { update } = useSession();
-  const router = useRouter();
 
   // Check if user is ORG_ADMIN
   const isOrgAdmin = activeOrg.role === "ORG_ADMIN";
@@ -93,8 +91,8 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
       const result = await switchOrg(orgId);
       if (result.success) {
         await update({ activeOrgId: orgId });
-        // Use hard navigation to ensure session is fully refreshed
-        window.location.href = window.location.pathname;
+        const currentPath = pathname.replace(new RegExp(`^/${activeOrg.id}`), "");
+        window.location.href = `/${orgId}${currentPath}`;
       } else {
         console.error("Failed to switch org:", result.error);
         setIsSwitching(false);
@@ -284,7 +282,8 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
               {group.header}
             </h3>
             {group.items.map(({ label, href, icon: Icon }) => {
-              const isActive = pathname === href || pathname.startsWith(href + "/");
+              const orgHref = `/${activeOrg.id}${href}`;
+              const isActive = pathname === orgHref || pathname.startsWith(`${orgHref}/`);
               
               // Hide Organization Settings for non-admins
               if (href === "/settings/organization" && !isOrgAdmin) {
@@ -294,7 +293,7 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
               return (
                 <Link
                   key={href}
-                  href={href}
+                  href={orgHref}
                   className={`flex items-center gap-3 px-2 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
                     isActive
                       ? "bg-zinc-800/80 text-white"
