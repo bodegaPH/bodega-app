@@ -13,6 +13,8 @@ function isPublicPath(pathname: string) {
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
 
   if (pathname.startsWith("/_next") || pathname === "/favicon.ico") {
     return NextResponse.next();
@@ -32,7 +34,11 @@ export async function proxy(req: NextRequest) {
   }
 
   if (isPublicPath(pathname)) {
-    return NextResponse.next();
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   }
 
   if (!token) {
@@ -40,7 +46,11 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
