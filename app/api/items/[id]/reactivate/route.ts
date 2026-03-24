@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
 import { requireAuthWithOrg } from "@/lib/api-auth";
-import { prisma } from "@/lib/db";
+import { ItemApiError, reactivateItem } from "@/features/items/server";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
+}
+
+function asErrorResponse(error: unknown) {
+  if (error instanceof ItemApiError) {
+    return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+
+  throw error;
 }
 
 export async function POST(_request: Request, context: RouteContext) {
@@ -14,19 +22,10 @@ export async function POST(_request: Request, context: RouteContext) {
 
   const { id } = await context.params;
 
-  const existing = await prisma.item.findFirst({
-    where: { id, orgId: auth.orgId },
-    select: { id: true },
-  });
-
-  if (!existing) {
-    return NextResponse.json({ error: "Item not found" }, { status: 404 });
+  try {
+    await reactivateItem(auth.orgId, id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return asErrorResponse(error);
   }
-
-  await prisma.item.update({
-    where: { id },
-    data: { isActive: true },
-  });
-
-  return NextResponse.json({ success: true });
 }
