@@ -142,19 +142,14 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
         >
           {/* Logo Icon */}
           <div className="relative flex items-center justify-center w-8 h-8 rounded-md bg-zinc-900 border border-white/10 shrink-0">
-            <svg
-              className="w-4 h-4 text-white"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z" />
-              <path d="M12 12L12 21" />
-              <path d="M12 12L20 7.5" />
-              <path d="M12 12L4 7.5" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-white">
+              <path
+                d="M5 4h9l6 4.5-4 3.5 4 3.5-6 4.5H5z"
+                strokeWidth="3.5"
+                strokeLinejoin="miter"
+                strokeLinecap="square"
+                className="text-white"
+              />
             </svg>
           </div>
           <div className="flex-1 min-w-0 flex items-center justify-between">
