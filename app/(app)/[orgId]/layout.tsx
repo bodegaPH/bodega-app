@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ReactNode } from "react";
+import { OrgProvider } from "@/features/shared/OrgContext";
 
 export default async function OrgLayout({
   children,
@@ -38,6 +39,10 @@ export default async function OrgLayout({
     redirect(`/${firstOrgId}/dashboard`);
   }
 
-  // orgId is valid, render children
-  return <>{children}</>;
+  // Wrap children in OrgProvider for client components that need context
+  return (
+    <OrgProvider orgId={orgId} userId={session.user.id}>
+      {children}
+    </OrgProvider>
+  );
 }

@@ -1,4 +1,7 @@
 import { prisma } from "@/lib/db";
+import { getItemsForSelect } from "@/features/items/server";
+import { getLocationsForSelect } from "@/features/locations/server";
+import type { ItemReference, LocationReference } from "@/features/shared/types";
 
 export type InventoryRow = {
   id: string;
@@ -19,11 +22,13 @@ export type InventoryRow = {
 
 export type InventoryPageData = {
   inventory: InventoryRow[];
-  items: { id: string; name: string; sku: string; unit: string }[];
-  locations: { id: string; name: string; isDefault: boolean }[];
+  items: ItemReference[];
+  locations: (LocationReference & { isDefault: boolean })[];
 };
 
 export async function getInventory(orgId: string): Promise<InventoryPageData> {
+  // Use cross-feature service functions for items and locations
+  // Only CurrentStock query remains local (owned by inventory feature)
   const [rawInventory, items, locations] = await Promise.all([
     prisma.currentStock.findMany({
       where: { orgId },
@@ -52,16 +57,8 @@ export async function getInventory(orgId: string): Promise<InventoryPageData> {
         item: { name: "asc" },
       },
     }),
-    prisma.item.findMany({
-      where: { orgId, isActive: true },
-      select: { id: true, name: true, sku: true, unit: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.location.findMany({
-      where: { orgId },
-      select: { id: true, name: true, isDefault: true },
-      orderBy: { name: "asc" },
-    }),
+    getItemsForSelect(orgId),
+    getLocationsForSelect(orgId),
   ]);
 
   const inventory = rawInventory.map((row) => ({

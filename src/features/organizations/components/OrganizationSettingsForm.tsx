@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Button from "@/app/components/ui/Button";
+import Button from "@/src/components/ui/Button";
 
 interface OrganizationSettingsFormProps {
   organization: {

@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const PUBLIC_PATHS = [
-  "/",
-  "/auth/signin",
-  "/auth/signup",
-];
+const PUBLIC_PATHS = ["/auth/signin", "/auth/signup"];
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.includes(pathname);

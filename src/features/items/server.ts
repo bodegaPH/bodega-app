@@ -4,6 +4,8 @@ export {
   createItem,
   deleteItem,
   getItems,
+  getItemsForSelect,
   reactivateItem,
   updateItem,
+  validateItemForMovement,
 } from "./api/items";

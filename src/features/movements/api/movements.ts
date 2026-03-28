@@ -6,6 +6,8 @@ import {
   type MovementDTO,
   MovementType,
 } from "@/features/movements/types";
+import { validateItemForMovement } from "@/features/items/server";
+import { validateLocationForMovement } from "@/features/locations/server";
 
 type CreateMovementRecord = {
   id: string;
@@ -208,26 +210,16 @@ export async function getMovements(orgId: string, filters: GetMovementsFilters =
 export async function createMovement(orgId: string, payload: unknown): Promise<MovementDTO> {
   const input = validateCreateMovementInput(payload);
 
-  const item = await prisma.item.findFirst({
-    where: { id: input.itemId, orgId },
-    select: { id: true, isActive: true },
-  });
-
-  if (!item) {
-    throw new MovementApiError("Item not found", 404);
+  // Use items feature service for validation instead of direct Prisma query
+  const itemValidation = await validateItemForMovement(orgId, input.itemId);
+  if (!itemValidation.valid) {
+    throw new MovementApiError(itemValidation.reason, itemValidation.reason === "Item not found" ? 404 : 400);
   }
 
-  if (!item.isActive) {
-    throw new MovementApiError("Cannot record movement for an inactive item", 400);
-  }
-
-  const location = await prisma.location.findFirst({
-    where: { id: input.locationId, orgId },
-    select: { id: true },
-  });
-
-  if (!location) {
-    throw new MovementApiError("Location not found", 404);
+  // Use locations feature service for validation instead of direct Prisma query
+  const locationValidation = await validateLocationForMovement(orgId, input.locationId);
+  if (!locationValidation.valid) {
+    throw new MovementApiError(locationValidation.reason, 404);
   }
 
   const movement = await prisma.$transaction(async (tx) => {

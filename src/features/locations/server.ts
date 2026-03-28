@@ -3,6 +3,8 @@ export {
   createLocation,
   deleteLocation,
   getLocations,
+  getLocationsForSelect,
   LocationApiError,
   updateLocation,
+  validateLocationForMovement,
 } from "./api/locations";

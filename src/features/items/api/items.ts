@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import type { ItemValidationResult, ItemReference } from "@/features/items/types";
 
 type ItemRecord = {
   id: string;
@@ -240,4 +241,52 @@ export async function reactivateItem(orgId: string, id: string) {
     where: { id },
     data: { isActive: true },
   });
+}
+
+/**
+ * Validate an item exists and is active for use in movements.
+ * This is the cross-feature service function - movements should call this
+ * instead of querying prisma.item directly.
+ */
+export async function validateItemForMovement(
+  orgId: string,
+  itemId: string
+): Promise<ItemValidationResult> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, orgId },
+    select: { id: true, name: true, sku: true, unit: true, isActive: true },
+  });
+
+  if (!item) {
+    return { valid: false, reason: "Item not found" };
+  }
+
+  if (!item.isActive) {
+    return { valid: false, reason: "Cannot record movement for an inactive item" };
+  }
+
+  const reference: ItemReference = {
+    id: item.id,
+    name: item.name,
+    sku: item.sku,
+    unit: item.unit,
+  };
+
+  return { valid: true, item: reference };
+}
+
+/**
+ * Get items for dropdown/select components (active items only, minimal fields).
+ * This is a cross-feature service function for inventory/movements forms.
+ */
+export async function getItemsForSelect(
+  orgId: string
+): Promise<ItemReference[]> {
+  const items = await prisma.item.findMany({
+    where: { orgId, isActive: true },
+    select: { id: true, name: true, sku: true, unit: true },
+    orderBy: { name: "asc" },
+  });
+
+  return items;
 }

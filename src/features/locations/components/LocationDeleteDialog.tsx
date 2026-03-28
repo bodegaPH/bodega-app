@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Button from "@/app/components/ui/Button";
+import Button from "@/src/components/ui/Button";
 
 interface LocationDeleteDialogProps {
   open: boolean;

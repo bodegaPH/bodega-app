@@ -1,6 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { CreateLocationInput, LocationDTO, UpdateLocationInput } from "@/features/locations/types";
+import type {
+  CreateLocationInput,
+  LocationDTO,
+  LocationReference,
+  LocationValidationResult,
+  UpdateLocationInput,
+} from "@/features/locations/types";
 
 const locationSelect = {
   id: true,
@@ -213,4 +219,46 @@ export async function deleteLocation(orgId: string, id: string) {
   }
 
   await prisma.location.delete({ where: { id } });
+}
+
+/**
+ * Validate a location exists for use in movements.
+ * This is the cross-feature service function - movements should call this
+ * instead of querying prisma.location directly.
+ */
+export async function validateLocationForMovement(
+  orgId: string,
+  locationId: string
+): Promise<LocationValidationResult> {
+  const location = await prisma.location.findFirst({
+    where: { id: locationId, orgId },
+    select: { id: true, name: true },
+  });
+
+  if (!location) {
+    return { valid: false, reason: "Location not found" };
+  }
+
+  const reference: LocationReference = {
+    id: location.id,
+    name: location.name,
+  };
+
+  return { valid: true, location: reference };
+}
+
+/**
+ * Get locations for dropdown/select components (minimal fields).
+ * This is a cross-feature service function for inventory/movements forms.
+ */
+export async function getLocationsForSelect(
+  orgId: string
+): Promise<(LocationReference & { isDefault: boolean })[]> {
+  const locations = await prisma.location.findMany({
+    where: { orgId },
+    select: { id: true, name: true, isDefault: true },
+    orderBy: [{ isDefault: "desc" }, { name: "asc" }],
+  });
+
+  return locations;
 }

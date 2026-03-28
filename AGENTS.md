@@ -1,12 +1,38 @@
 # Bodega — Project Agent Rules
 
 ## Architecture & Code Organization
-- Single Next.js 16 App Router app. Two route groups:
-  - `app/(marketing)/` — public pages, no auth required.
+- Single Next.js 16 App Router app. Route groups:
   - `app/(app)/` — protected pages, auth checked via `getServerSession()`.
-- Auth pages live at `app/auth/` outside both groups (own layout).
+  - Marketing site extracted to separate `bodega-marketing` repository (Astro).
+- Auth pages live at `app/auth/` outside route groups (own layout).
 - **Feature-Driven Architecture**: Domain logic, actions, types, and components should be encapsulated in `src/features/<domain>/`.
 - Do not place shared feature logic in `app/` routes. `app/` should mostly contain route handlers and page layouts wrapping feature components.
+
+### Feature Module Convention
+
+Each feature module in `src/features/<domain>/` follows this structure:
+
+```
+src/features/<domain>/
+├── api/            # Data access layer (server-only, can use Prisma)
+├── actions/        # Server actions with "use server"
+├── components/     # Domain-specific React components
+├── hooks/          # Client-side hooks (if needed)
+├── types.ts        # Domain types and DTOs
+├── index.ts        # Client-safe exports (components, hooks, types)
+└── server.ts       # Server-only exports (API functions, actions)
+```
+
+**Server/Client Boundary Rules:**
+- `index.ts` — Client-safe: components, hooks, types. **Never import Prisma here.**
+- `server.ts` — Server-only: API functions, actions. **Can use Prisma.**
+- Never import `server.ts` from client components — Next.js will error on Prisma in browser bundle.
+- Cross-feature imports should go through barrel exports, not reach into internal files.
+
+**Cross-Feature Dependencies:**
+- Features should expose service functions for validation/lookup that other features need.
+- Avoid direct Prisma queries across feature boundaries — use the owning feature's API instead.
+- Shared types used by multiple features belong in `src/features/shared/types.ts`.
 
 ## Build, Lint & Test Commands
 - **Type Checking:** Run `npx tsc --noEmit` to verify TypeScript types (CRITICAL: Always run this before committing or concluding a task).
@@ -42,8 +68,25 @@
 - Default to **server components** in Next.js 16. Only add `"use client"` when React hooks (`useState`, `useEffect`) or DOM event handlers are strictly needed.
 - Keep components small. Extract and delegate complex business logic to `api/` or `actions/` files.
 - Component locations:
-  - `app/components/ui/` — shared primitives (Button, Input, Card).
+  - `src/components/ui/` — shared primitives (Button, Input, Card).
+  - `src/components/layout/` — app shell components (AppSidebar, AppHeader).
   - `src/features/<domain>/components/` — domain-specific components.
+
+### Organization Context
+- **OrgProvider** is available in all `app/(app)/[orgId]/**` routes via layout.
+- **Server components**: Continue using `params` directly — don't use context.
+- **Client components**: Use `useOrg()` hook when you need `orgId` or `userId` without prop drilling.
+  ```tsx
+  "use client";
+  import { useOrg } from "@/features/shared/OrgContext";
+  
+  function MyComponent() {
+    const { orgId, userId } = useOrg();
+    // ...
+  }
+  ```
+- **When to use context**: Real-time features, deeply nested client forms, client-side org-scoped state.
+- **When to use params**: Server components, single-level prop passing (current pattern for most pages).
 
 ### Styling
 - Dark mode only — never add light mode variants.
