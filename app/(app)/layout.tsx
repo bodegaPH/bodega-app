@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import AppSidebar from "@/app/components/layout/AppSidebar";
-import AppHeader from "@/app/components/layout/AppHeader";
+import AppSidebar from "@/src/components/layout/AppSidebar";
+import AppHeader from "@/src/components/layout/AppHeader";
 
 export default async function AppLayout({
   children,

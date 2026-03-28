@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { MoreHorizontal, Star, MapPin, Edit2, Trash2, CheckCircle, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Button from "@/app/components/ui/Button";
+import Button from "@/src/components/ui/Button";
 import LocationForm from "./LocationForm";
 import LocationDeleteDialog from "./LocationDeleteDialog";
 

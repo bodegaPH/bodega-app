@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArchiveX, Package, Pencil, RotateCcw, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Button from "@/app/components/ui/Button";
+import Button from "@/src/components/ui/Button";
 import ItemForm, { type ItemPayload } from "./ItemForm";
 import ItemDeactivateDialog from "./ItemDeactivateDialog";
 
