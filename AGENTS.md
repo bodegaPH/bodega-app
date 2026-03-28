@@ -72,6 +72,22 @@ src/features/<domain>/
   - `src/components/layout/` — app shell components (AppSidebar, AppHeader).
   - `src/features/<domain>/components/` — domain-specific components.
 
+### Organization Context
+- **OrgProvider** is available in all `app/(app)/[orgId]/**` routes via layout.
+- **Server components**: Continue using `params` directly — don't use context.
+- **Client components**: Use `useOrg()` hook when you need `orgId` or `userId` without prop drilling.
+  ```tsx
+  "use client";
+  import { useOrg } from "@/features/shared/OrgContext";
+  
+  function MyComponent() {
+    const { orgId, userId } = useOrg();
+    // ...
+  }
+  ```
+- **When to use context**: Real-time features, deeply nested client forms, client-side org-scoped state.
+- **When to use params**: Server components, single-level prop passing (current pattern for most pages).
+
 ### Styling
 - Dark mode only — never add light mode variants.
 - Always follow Cinematic Prism: `bg-zinc-950` base, `bg-zinc-900/40 backdrop-blur-3xl` surfaces, `border-white/5` borders.
