@@ -27,13 +27,13 @@ export default function SignInForm() {
       });
 
       if (res?.error) {
-        setError("Invalid email or password");
+        setError("Invalid email or password. Please check your credentials and try again.");
       } else {
         router.push("/dashboard");
       }
     } catch (err) {
       console.error(err);
-      setError("An unexpected error occurred");
+      setError("Unable to sign in. Please try again later.");
     } finally {
       setLoading(false);
     }

@@ -28,7 +28,11 @@ export default function SignUpForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Something went wrong");
+        // Handle string errors or extract message from error objects
+        const errorMessage = typeof data.error === 'string' 
+          ? data.error 
+          : data.error?.message || "Unable to create account. Please try again.";
+        throw new Error(errorMessage);
       }
 
       router.push("/auth/signin?registered=true");
@@ -108,10 +112,15 @@ export default function SignUpForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={12}
+              maxLength={72}
               className="block w-full pl-10 pr-4 py-2.5 bg-zinc-900/40 border border-white/10 rounded-lg text-sm text-white placeholder-zinc-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:bg-zinc-900 transition-all duration-300 hover:border-white/20"
               placeholder="••••••••••••"
             />
           </div>
+          <p className="text-xs text-zinc-500 mt-1">
+            Must be at least 12 characters long
+          </p>
         </div>
 
         <button
