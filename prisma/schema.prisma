@@ -127,6 +127,8 @@ model Movement {
   createdAt     DateTime     @default(now())
 
   @@index([orgId, itemId, createdAt])
+  @@index([orgId, createdAt])
+  @@index([orgId, locationId, createdAt])
 }
 
 model CurrentStock {
@@ -143,6 +145,7 @@ model CurrentStock {
   updatedAt     DateTime     @updatedAt
 
   @@unique([orgId, itemId, locationId])
+  @@index([orgId])
 }
 
 model Account {
