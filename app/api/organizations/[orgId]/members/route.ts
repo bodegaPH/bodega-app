@@ -7,23 +7,16 @@ export async function GET(
   { params }: { params: Promise<{ orgId: string }> }
 ) {
   try {
-    const auth = await requireAuthWithOrg();
+    const auth = await requireAuthWithOrg({ allowedRoles: ["ORG_ADMIN"] });
     if (!auth.success) return auth.response;
 
-    const { orgId: activeOrgId, orgRole } = auth;
+    const { orgId: activeOrgId } = auth;
     const { orgId: requestedOrgId } = await params;
 
     if (requestedOrgId !== activeOrgId) {
       return NextResponse.json(
         { error: "Not found" },
         { status: 404 }
-      );
-    }
-
-    if (orgRole !== "ORG_ADMIN") {
-      return NextResponse.json(
-        { error: "Admin access required" },
-        { status: 403 }
       );
     }
 

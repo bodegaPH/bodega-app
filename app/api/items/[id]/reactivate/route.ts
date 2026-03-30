@@ -15,7 +15,7 @@ function asErrorResponse(error: unknown) {
 }
 
 export async function POST(_request: Request, context: RouteContext) {
-  const auth = await requireAuthWithOrg();
+  const auth = await requireAuthWithOrg({ allowedRoles: ["ORG_ADMIN", "ORG_USER"] });
   if (!auth.success) {
     return auth.response;
   }

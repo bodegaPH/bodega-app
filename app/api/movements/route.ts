@@ -6,13 +6,12 @@ import {
   MovementApiError,
   type GetMovementsFilters,
 } from "@/features/movements/server";
+import { createMovementSchema } from "@/features/movements/schemas";
+import { handleApiError } from "@/lib/api-handler";
+import { apiError } from "@/lib/api-errors";
 
 function asErrorResponse(error: unknown) {
-  if (error instanceof MovementApiError) {
-    return NextResponse.json({ error: error.message }, { status: error.status });
-  }
-
-  throw error;
+  return handleApiError(error);
 }
 
 function parseDateParam(value: string | null, fieldLabel: string): Date | undefined {
@@ -20,9 +19,20 @@ function parseDateParam(value: string | null, fieldLabel: string): Date | undefi
     return undefined;
   }
 
+  const iso8601Pattern = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/;
+  if (!iso8601Pattern.test(value)) {
+    throw new MovementApiError(
+      `Invalid ${fieldLabel} date: must be ISO 8601 format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ)`,
+      400
+    );
+  }
+
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) {
-    throw new MovementApiError(`Invalid ${fieldLabel} date`, 400);
+    throw new MovementApiError(
+      `Invalid ${fieldLabel} date: must be ISO 8601 format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ)`,
+      400
+    );
   }
 
   return parsed;
@@ -60,7 +70,7 @@ export async function GET(request: Request) {
       locationId: searchParams.get("locationId") ?? undefined,
       from: parseDateParam(searchParams.get("from"), "from"),
       to: parseDateParam(searchParams.get("to"), "to"),
-      page: parsePaginationParam(searchParams.get("page"), "page", 1, 1, Number.MAX_SAFE_INTEGER),
+      page: parsePaginationParam(searchParams.get("page"), "page", 1, 1, 10000),
       limit: parsePaginationParam(searchParams.get("limit"), "limit", 50, 1, 100),
     };
 
@@ -72,7 +82,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireAuthWithOrg();
+  const auth = await requireAuthWithOrg({ allowedRoles: ["ORG_ADMIN", "ORG_USER"] });
   if (!auth.success) {
     return auth.response;
   }
@@ -81,17 +91,20 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
+  }
+
+  const validation = createMovementSchema.safeParse(body);
+  if (!validation.success) {
+    return apiError("Validation failed", 400, {
+      code: "VALIDATION_ERROR",
+      details: validation.error.flatten(),
+    });
   }
 
   try {
-    const parsedBody =
-      body && typeof body === "object" && !Array.isArray(body)
-        ? (body as Record<string, unknown>)
-        : {};
-
     const movement = await createMovement(auth.orgId, {
-      ...parsedBody,
+      ...validation.data,
       createdById: auth.session.user.id,
     });
 

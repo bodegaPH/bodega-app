@@ -158,7 +158,7 @@ function sanitizePaginationNumber(value: number | undefined, fallback: number, m
 }
 
 export async function getMovements(orgId: string, filters: GetMovementsFilters = {}): Promise<ListMovementsResponse> {
-  const page = sanitizePaginationNumber(filters.page, 1, 1, Number.MAX_SAFE_INTEGER);
+  const page = sanitizePaginationNumber(filters.page, 1, 1, 10000);
   const limit = sanitizePaginationNumber(filters.limit, 50, 1, 100);
   const skip = (page - 1) * limit;
 
@@ -223,45 +223,40 @@ export async function createMovement(orgId: string, payload: unknown): Promise<M
   }
 
   const movement = await prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`
-      SELECT id FROM "CurrentStock"
-      WHERE "orgId" = ${orgId}
-        AND "itemId" = ${input.itemId}
-        AND "locationId" = ${input.locationId}
-      FOR UPDATE
+    // 1. Calculate delta based on movement type
+    const delta = (() => {
+      switch (input.type) {
+        case MovementType.ISSUE:
+          return -Math.abs(input.quantity); // Always negative
+        case MovementType.RECEIVE:
+          return Math.abs(input.quantity); // Always positive
+        case MovementType.ADJUSTMENT:
+          return input.quantity; // Preserve sign for adjustments
+      }
+    })();
+
+    // 2. Atomic upsert
+    const [stockResult] = await tx.$queryRaw<[{ quantity: number }]>`
+      INSERT INTO "CurrentStock" ("id", "orgId", "itemId", "locationId", "quantity", "updatedAt")
+      VALUES (gen_random_uuid(), ${orgId}, ${input.itemId}, ${input.locationId}, ${delta}, NOW())
+      ON CONFLICT ("orgId", "itemId", "locationId")
+      DO UPDATE SET 
+        quantity = "CurrentStock".quantity + ${delta},
+        "updatedAt" = NOW()
+      RETURNING quantity::float as quantity
     `;
 
-    const existing = await tx.currentStock.findUnique({
-      where: {
-        orgId_itemId_locationId: {
-          orgId,
-          itemId: input.itemId,
-          locationId: input.locationId,
-        },
-      },
-      select: { quantity: true },
-    });
-
-    const currentQty = existing ? Number(existing.quantity) : 0;
-
-    let newQty: number;
-    if (input.type === MovementType.RECEIVE) {
-      newQty = currentQty + input.quantity;
-    } else if (input.type === MovementType.ISSUE) {
-      newQty = currentQty - input.quantity;
-    } else {
-      newQty = currentQty + input.quantity;
-    }
-
-    if (newQty < 0) {
+    // 3. Validate no negative stock
+    if (stockResult.quantity < 0) {
       throw new InsufficientStockError(
         input.type === MovementType.ISSUE
-          ? "Insufficient stock — cannot issue more than available quantity"
-          : "Insufficient stock — adjustment would produce negative inventory"
+          ? "Insufficient stock — cannot issue more than available"
+          : "Adjustment would produce negative inventory"
       );
     }
 
-    const createdMovement = await tx.movement.create({
+    // 4. Insert immutable movement record
+    return tx.movement.create({
       data: {
         orgId,
         itemId: input.itemId,
@@ -271,33 +266,8 @@ export async function createMovement(orgId: string, payload: unknown): Promise<M
         quantity: Math.abs(input.quantity),
         reason: input.reason,
       },
-      select: {
-        id: true,
-        type: true,
-        quantity: true,
-        reason: true,
-        createdAt: true,
-      },
+      select: { id: true, type: true, quantity: true, reason: true, createdAt: true },
     });
-
-    await tx.currentStock.upsert({
-      where: {
-        orgId_itemId_locationId: {
-          orgId,
-          itemId: input.itemId,
-          locationId: input.locationId,
-        },
-      },
-      create: {
-        orgId,
-        itemId: input.itemId,
-        locationId: input.locationId,
-        quantity: newQty,
-      },
-      update: { quantity: newQty },
-    });
-
-    return createdMovement;
   });
 
   return asMovementDto(movement);

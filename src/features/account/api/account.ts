@@ -128,8 +128,12 @@ export async function changePassword(
     throw new AccountApiError("Current password and new password are required", 400);
   }
 
-  if (newPassword.length < 8) {
-    throw new AccountApiError("Password must be at least 8 characters", 400);
+  if (newPassword.length < 12) {
+    throw new AccountApiError("Password must be at least 12 characters", 400);
+  }
+
+  if (newPassword.length > 72) {
+    throw new AccountApiError("Password must not exceed 72 characters", 400);
   }
 
   const user = await prisma.user.findUnique({
