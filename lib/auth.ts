@@ -34,16 +34,16 @@ providers.push(
           where: { email: credentials.email },
         });
 
-        if (!user || !user.password) {
-          return null;
-        }
-
+        // Constant-time comparison to prevent timing attacks on user enumeration
+        // Always run bcrypt even if user doesn't exist
+        const DUMMY_HASH = "$2b$10$K.0HwpsoPDGaB/JvnaHVk.OO7T8QkLn.Vy0tXKA1sLPvZTvg.xJNi";
+        const hashToCompare = user?.password || DUMMY_HASH;
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
-          user.password
+          hashToCompare
         );
 
-        if (!isPasswordValid) {
+        if (!user || !user.password || !isPasswordValid) {
           return null;
         }
 
