@@ -5,6 +5,8 @@
 import * as repo from "./repository";
 import { getItemsForSelect } from "@/modules/items";
 import { getLocationsForSelect } from "@/modules/locations";
+import { getOrganizationName } from "@/modules/organizations";
+import { generateInventoryCsv, type CsvExportResult } from "./csv-generator";
 import type { InventoryPageData, InventoryRow } from "./types";
 
 export type { InventoryPageData, InventoryRow } from "./types";
@@ -58,4 +60,19 @@ export async function getLowStockItems(orgId: string): Promise<InventoryRow[]> {
       },
       location: row.location,
     }));
+}
+
+/**
+ * Generate CSV export of inventory
+ */
+export async function generateInventoryCsvExport(
+  orgId: string,
+  limit?: number
+): Promise<CsvExportResult> {
+  const [rows, orgName] = await Promise.all([
+    repo.getInventoryForExport(orgId, limit),
+    getOrganizationName(orgId),
+  ]);
+
+  return generateInventoryCsv(rows, orgName ?? "inventory");
 }

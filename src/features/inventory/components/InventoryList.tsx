@@ -5,6 +5,7 @@ import { Package, Plus, ArrowRightLeft } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { MovementForm } from "@/features/movements";
 import { useRouter } from "next/navigation";
+import { ExportButton } from "./ExportButton";
 
 interface InventoryRow {
   id: string;
@@ -53,10 +54,13 @@ export default function InventoryList({ inventory, items, locations }: Inventory
               View current inventory levels across all locations.
             </p>
           </div>
-          <Button onClick={() => handleRecordMovement()} className="flex items-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-none transition-colors border border-transparent">
-            <Plus className="h-4 w-4" />
-            Record Movement
-          </Button>
+          <div className="flex gap-2">
+            <ExportButton />
+            <Button onClick={() => handleRecordMovement()} className="flex items-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-none transition-colors border border-transparent">
+              <Plus className="h-4 w-4" />
+              Record Movement
+            </Button>
+          </div>
         </div>
 
         <div className="mt-6">
