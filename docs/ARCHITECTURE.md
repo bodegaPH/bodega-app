@@ -19,55 +19,104 @@ Bodega is a single full-stack Next.js application with an append-only inventory 
 ---
 
 **Architecture Diagram (textual)**
-Browser  
-→ Next.js App (UI + API routes)  
-→ Auth.js (sessions/providers)  
-→ Prisma  
-→ PostgreSQL (ledger + current stock + org data)
+```
+Browser
+  ↓
+Next.js App Router (src/app/)
+  ↓
+Features Layer (src/features/)
+  - Components (UI)
+  - Actions ("use server")
+  - Hooks (client state)
+  ↓
+Modules Layer (src/modules/)
+  - Service (business logic)
+  - Repository (data access)
+  - Types, Errors
+  ↓
+Prisma ORM
+  ↓
+PostgreSQL
+  - Movement (ledger)
+  - CurrentStock (derived)
+  - Organizations, Items, Locations
+```
 
 ---
 
 **Folder Structure (textual)**
 ```
 bodega-app/
-  app/
-    (marketing)/
-    (app)/
-    api/
-    auth/
-    components/
-      ui/
-      layout/
-    layout.tsx
-    page.tsx
-    globals.css
   src/
-    features/
+    app/                    # Next.js App Router
+      (app)/                # Protected routes (org-scoped)
+        [orgId]/
+          dashboard/
+          inventory/
+          items/
+          locations/
+          movements/
+          settings/
+      auth/                 # Public auth pages
+      api/                  # API routes
+      layout.tsx
+      globals.css
+    
+    modules/                # Domain/Business Layer
       account/
+      indicators/           # Dashboard alerts
       inventory/
       items/
       locations/
       movements/
       organizations/
-        actions/
-        api/
-        components/
-        types.ts
-        index.ts
-  lib/
-    auth.ts
-    db.ts
-    api-auth.ts
+        __tests__/          # Integration tests
+        repository.ts       # Prisma queries (internal)
+        service.ts          # Business logic (public API)
+        types.ts            # Domain types
+        errors.ts           # Domain errors
+        index.ts            # Public exports
+    
+    features/               # Presentation Layer
+      account/
+      auth/
+      dashboard/
+      inventory/
+      items/
+      locations/
+      movements/
+      organizations/
+      shared/               # Shared types and context
+        actions/            # Server actions
+        components/         # React components
+        hooks/              # Client hooks
+        server.ts           # Re-exports from modules
+        index.ts            # Client-safe exports
+    
+    components/             # Shared UI components
+      ui/                   # Primitives (Button, Input)
+      layout/               # App shell (Sidebar, Header)
+    
+    lib/                    # Utilities
+      auth.ts               # Auth configuration
+      db.ts                 # Prisma client
+      api-auth.ts           # API auth helpers
+      validate-env.ts       # Env validation
+    
+    test-utils/             # Test utilities
+      prisma-mock.ts
+    
   prisma/
     schema.prisma
     migrations/
-  public/
-  types/
+  
   docs/
-    BODEGA_MVP.md
+    PRD.md
     ARCHITECTURE.md
+  
+  vitest.config.ts          # Test configuration
+  AGENTS.md                 # Agent rules
   .env
-  .gitignore
   next.config.ts
   package.json
   tsconfig.json
@@ -76,7 +125,11 @@ bodega-app/
 ---
 
 **Key Technical Decisions**
-- Feature-Driven Architecture encapsulating domain logic, API functions, actions, and components inside `src/features/<domain>`.
+- **Layered Architecture:** Clean separation between presentation (features) and business logic (modules).
+- **Repository Pattern:** All Prisma queries encapsulated in module repositories, never accessed directly from features.
+- **Service Layer:** Public module APIs validate inputs, enforce business rules, and orchestrate repository calls.
+- **Feature/Module Split:** Features handle UI/UX and server actions; modules handle domain logic and data access.
+- **Testing:** Integration tests in modules (`__tests__/`) with Vitest; tests can conditionally skip if no DB.
 - Single Next.js app for UI + API to keep MVP delivery fast and consistent.
 - Postgres as system of record with transactions for inventory correctness.
 - Ledger-based movements with derived current stock for fast reads.
@@ -85,23 +138,67 @@ bodega-app/
 
 ---
 
+**Layered Architecture Details**
+
+**Modules Layer (Domain/Business Logic)**
+- Location: `src/modules/<domain>/`
+- Purpose: Encapsulates all business logic, validation, and data access
+- Components:
+  - `repository.ts` — Prisma queries (INTERNAL only, never import outside module)
+  - `service.ts` — Public API with validation and business rules
+  - `types.ts` — Domain types and DTOs
+  - `errors.ts` — Domain-specific error classes
+  - `index.ts` — Public exports barrel
+  - `__tests__/` — Integration tests
+- Example modules: items, locations, movements, inventory, organizations, account, indicators
+
+**Features Layer (Presentation/UI)**
+- Location: `src/features/<domain>/`
+- Purpose: User-facing components, server actions, and client-side state
+- Components:
+  - `components/` — React components (default server, `"use client"` when needed)
+  - `actions/` — Server actions with `"use server"` directive
+  - `hooks/` — Client-side React hooks
+  - `server.ts` — Re-exports from `@/modules/<domain>` for server components
+  - `index.ts` — Client-safe exports (no Prisma imports)
+  - `types.ts` — Feature-specific types (often re-exports from modules)
+
+**Data Flow Example:**
+```
+Dashboard Page (src/app/(app)/[orgId]/dashboard/page.tsx)
+  ↓ imports
+Feature Server Export (src/features/dashboard/server.ts)
+  ↓ imports
+Module Service (src/modules/indicators/service.ts)
+  ↓ calls
+Module Repository (src/modules/indicators/repository.ts)
+  ↓ queries
+Prisma → PostgreSQL
+```
+
+---
+
 **Frontend / Backend / Shared Responsibilities**
-Frontend
-- Org switching and scoped navigation.
-- Item CRUD, movement entry, inventory views.
-- Admin monitoring views (org admin) and System Admin dashboard.
-- CSV export triggers and download UX.
 
-Backend
-- Auth/session validation and org membership checks.
-- Ledger writes with transactional stock validation.
-- Current stock updates and audit logging.
-- CSV export generation (sync for small, async if needed).
+Presentation Layer (Features)
+- React components (server and client)
+- Server actions for form submissions
+- Client hooks for interactive state
+- UI/UX patterns and styling
+- Re-exports module APIs via `server.ts`
 
-Shared
-- Domain types (Item, Movement, Org, Membership, Stock).
-- Validation rules (e.g., adjustment reason required).
-- Error and response contracts.
+Domain Layer (Modules)
+- Business logic and validation
+- Data access via Prisma (repository pattern)
+- Domain types and error handling
+- Cross-module service APIs
+- Integration testing
+
+App Router Layer (src/app/)
+- Route definitions and layouts
+- Auth middleware and guards
+- API route handlers
+- Page composition (wraps feature components)
 
 ---
 
@@ -141,10 +238,3 @@ Shared
 - Thresholds (low stock / large outbound) need explicit product rules.
 
 ---
-
-**Open Technical Questions**
-1. Managed Postgres provider selection.
-2. Auth provider choice (email vs OAuth).
-3. Movement quantity rules (integer-only vs decimals).
-4. CSV size limits and async export requirement.
-5. Monitoring thresholds for "low stock" and "large outbound".

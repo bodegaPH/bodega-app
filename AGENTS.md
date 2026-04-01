@@ -1,48 +1,145 @@
 # Bodega — Project Agent Rules
 
 ## Architecture & Code Organization
-- Single Next.js 16 App Router app. Route groups:
-  - `app/(app)/` — protected pages, auth checked via `getServerSession()`.
-  - Marketing site extracted to separate `bodega-marketing` repository (Astro).
-- Auth pages live at `app/auth/` outside route groups (own layout).
-- **Feature-Driven Architecture**: Domain logic, actions, types, and components should be encapsulated in `src/features/<domain>/`.
-- Do not place shared feature logic in `app/` routes. `app/` should mostly contain route handlers and page layouts wrapping feature components.
 
-### Feature Module Convention
+### Layered Architecture
+Bodega uses a **clean layered architecture** separating business logic from presentation:
 
-Each feature module in `src/features/<domain>/` follows this structure:
+```
+┌─────────────────────────────────────────────────────┐
+│  src/features/          (Presentation Layer)        │
+│  └── Components, Actions, Hooks, Server re-exports  │
+└─────────────────────────────────────────────────────┘
+                        ↓ imports from
+┌─────────────────────────────────────────────────────┐
+│  src/modules/           (Domain/Business Layer)     │
+│  └── Service, Repository, Types, Errors, Tests      │
+└─────────────────────────────────────────────────────┘
+                        ↓ queries
+┌─────────────────────────────────────────────────────┐
+│  Prisma → PostgreSQL                                │
+└─────────────────────────────────────────────────────┘
+```
 
+### Module Convention (Domain Layer)
+
+**Location:** `src/modules/<domain>/`
+
+**Purpose:** Encapsulates all business logic, data access, and domain rules.
+
+**Structure:**
+```
+src/modules/<domain>/
+├── __tests__/          # Integration tests
+├── repository.ts       # Prisma data access (INTERNAL to module)
+├── service.ts          # Public API (validation + business logic)
+├── types.ts            # Domain types and DTOs
+├── errors.ts           # Domain-specific error classes
+└── index.ts            # Public exports barrel
+```
+
+**Rules:**
+- **Repository layer** (`repository.ts`) — Direct Prisma queries. **NEVER import outside the module.**
+- **Service layer** (`service.ts`) — Validates input, orchestrates business logic, calls repository.
+- **Public API** — Only `index.ts` and `service.ts` exports are importable from outside.
+- **No cross-module Prisma queries** — Modules call each other through service APIs only.
+- **Error handling** — Throw domain-specific errors (e.g., `ItemApiError`) from service layer.
+
+**Example:**
+```ts
+// ❌ BAD: Don't import repository from features
+import { findItemById } from "@/modules/items/repository";
+
+// ✅ GOOD: Import from module barrel (service API)
+import { getItems, validateForMovement } from "@/modules/items";
+```
+
+### Feature Convention (Presentation Layer)
+
+**Location:** `src/features/<domain>/`
+
+**Purpose:** UI components, server actions, and React hooks for user-facing functionality.
+
+**Structure:**
 ```
 src/features/<domain>/
-├── api/            # Data access layer (server-only, can use Prisma)
-├── actions/        # Server actions with "use server"
-├── components/     # Domain-specific React components
-├── hooks/          # Client-side hooks (if needed)
-├── types.ts        # Domain types and DTOs
-├── index.ts        # Client-safe exports (components, hooks, types)
-└── server.ts       # Server-only exports (API functions, actions)
+├── actions/            # Server actions with "use server"
+├── components/         # React components (server or client)
+├── hooks/              # Client-side hooks (if needed)
+├── types.ts            # Feature-specific types (often re-exports)
+├── index.ts            # Client-safe exports (components, hooks)
+└── server.ts           # Re-exports from @/modules/<domain>
 ```
 
-**Server/Client Boundary Rules:**
-- `index.ts` — Client-safe: components, hooks, types. **Never import Prisma here.**
-- `server.ts` — Server-only: API functions, actions. **Can use Prisma.**
-- Never import `server.ts` from client components — Next.js will error on Prisma in browser bundle.
-- Cross-feature imports should go through barrel exports, not reach into internal files.
+**Rules:**
+- **Features call modules** — Import from `@/modules/<domain>`, never from Prisma directly.
+- **server.ts** — Re-exports module APIs for use in server components/actions.
+- **index.ts** — Client-safe exports only (no module imports with Prisma).
+- **Components** — Default to server components. Use `"use client"` only when needed.
 
-**Cross-Feature Dependencies:**
-- Features should expose service functions for validation/lookup that other features need.
-- Avoid direct Prisma queries across feature boundaries — use the owning feature's API instead.
-- Shared types used by multiple features belong in `src/features/shared/types.ts`.
+**Example:**
+```ts
+// src/features/items/server.ts
+export { getItems, createItem, deleteItem } from "@/modules/items";
+
+// src/features/items/actions/create-item.ts
+import { createItem } from "@/modules/items"; // Direct module import OK in actions
+```
+
+### Cross-Layer Dependencies
+- **Modules → Modules:** Call through service APIs (exported from `index.ts`)
+- **Features → Modules:** Import from `@/modules/<domain>`
+- **Features → Features:** Rare, but import from `@/features/<domain>` barrel exports
+- **Shared types:** `src/features/shared/types.ts` for cross-feature DTOs
+
+### Route Organization
+- Single Next.js 16 App Router app. Route groups:
+  - `src/app/(app)/` — protected pages, auth checked via `getServerSession()`.
+  - Marketing site extracted to separate `bodega-marketing` repository (Astro).
+- Auth pages live at `src/app/auth/` outside route groups (own layout).
+- `src/app/` should mostly contain route handlers and page layouts wrapping feature components.
 
 ## Build, Lint & Test Commands
-- **Type Checking:** Run `npx tsc --noEmit` to verify TypeScript types (CRITICAL: Always run this before committing or concluding a task).
-- **Linting:** Run `npm run lint` to check for ESLint warnings/errors.
-- **Build:** Run `npm run build` to create a production build and verify complete compilation.
-- **Testing:** (When testing is added, Vitest/Jest is preferred).
-  - To run all tests: `npm test` or `npx vitest run`
-  - To run a single test: `npx vitest run path/to/file.test.ts` (or `npx jest path/to/file.test.ts`).
+
+### Type Checking
+- **Run type check:** `npx tsc --noEmit`
+- **CRITICAL:** Always run this before committing or concluding a task.
+
+### Linting
+- **Lint entire project:** `npm run lint`
+- **Lint specific files:** `npm run lint -- src/features/items/**/*.ts`
+- **Lint with auto-fix:** `npm run lint -- --fix`
+- Uses Next.js ESLint config (core-web-vitals + TypeScript)
+
+### Build & Development
+- **Dev server:** `npm run dev` (http://localhost:3000)
+- **Production build:** `npm run build`
+- **Production start:** `npm start`
+
+### Database (Prisma)
+- **Generate client:** `npx prisma generate` (run after schema changes)
+- **Create migration:** `npx prisma migrate dev --name <migration_name>`
+- **Apply migrations:** `npx prisma migrate deploy` (production)
+- **Reset database:** `npx prisma migrate reset` (development only)
+- **Open Studio:** `npx prisma studio`
+
+### Testing
+- **Framework:** Vitest with jsdom environment
+- **Config:** `vitest.config.ts`
+- **Test location:** `src/modules/<domain>/__tests__/`
+- **Run all tests:** `npm test` or `npx vitest run`
+- **Run single test:** `npx vitest run path/to/file.test.ts`
+- **Watch mode:** `npm run test:watch` or `npx vitest`
+- **Coverage:** `npm run test:coverage`
+- **Integration tests:** Test files can conditionally skip if `DATABASE_URL` not set
 
 ## Code Style & Conventions
+
+### Formatting
+- **Semicolons:** Required (enforced by ESLint)
+- **Quotes:** Double quotes for strings, single quotes for JSX attributes
+- **Indentation:** 2 spaces (no tabs)
+- **Line length:** Soft limit at 100 characters
 
 ### Imports
 - Always use the `@/` alias for absolute paths (e.g., `@/features/organizations`, `@/lib/db`). 
@@ -94,6 +191,21 @@ src/features/<domain>/
 - Reference `app/auth/layout.tsx` as the canonical design system example.
 - Primary actions: `bg-blue-600 hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.3)]`.
 - Errors: `bg-rose-500/10 text-rose-200 border-rose-500/20`.
+
+---
+
+## Environment Variables
+
+**Required variables** (in `.env`):
+- `DATABASE_URL` — PostgreSQL connection string
+- `NEXTAUTH_SECRET` — Session encryption key (generate with `openssl rand -base64 32`)
+- `NEXTAUTH_URL` — App URL (e.g., `http://localhost:3000` for dev)
+
+**Optional variables:**
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth (if not set, credential auth only)
+- `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED` — Set to `"true"` to show Google sign-in button
+
+**Validation:** Environment variables are validated at startup via `src/lib/validate-env.ts`. Missing critical vars will throw errors with helpful messages.
 
 ---
 
