@@ -5,7 +5,6 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import AppSidebar from "@/components/layout/AppSidebar";
 import AppHeader from "@/components/layout/AppHeader";
-import type { MembershipRole } from "@prisma/client";
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +48,7 @@ export default async function AppLayout({
   const userOrgs = memberships.map(
     (m: {
       organization: { id: string; name: string; slug: string | null };
-      role: MembershipRole;
+      role: "ORG_ADMIN" | "ORG_USER";
     }) => ({
       id: m.organization.id,
       name: m.organization.name,
