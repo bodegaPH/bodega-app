@@ -58,7 +58,12 @@ providers.push(
   );
 
 export const authOptions: NextAuthOptions = {
-  adapter: process.env.DATABASE_URL ? (PrismaAdapter(prisma) as any) : undefined,
+  adapter:
+    process.env.NEXT_PHASE === "phase-production-build"
+      ? undefined
+      : process.env.DATABASE_URL
+        ? (PrismaAdapter(prisma) as any)
+        : undefined,
   session: {
     strategy: "jwt",
   },

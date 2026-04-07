@@ -13,7 +13,8 @@ export default async function OnboardingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  if (process.env.SKIP_BUILD_STATIC_GENERATION) {
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  if (isBuildPhase || process.env.SKIP_BUILD_STATIC_GENERATION) {
     return children;
   }
 
