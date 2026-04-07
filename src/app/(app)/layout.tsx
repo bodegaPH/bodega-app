@@ -6,6 +6,8 @@ import { prisma } from "@/lib/db";
 import AppSidebar from "@/components/layout/AppSidebar";
 import AppHeader from "@/components/layout/AppHeader";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AppLayout({
   children,
 }: {
