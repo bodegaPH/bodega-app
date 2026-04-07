@@ -99,7 +99,7 @@ export default function OrganizationSettingsForm({ organization, isLastOrg }: Or
       }
 
       // Use hard navigation to ensure session is fully refreshed
-      window.location.href = "/dashboard";
+      window.location.href = `/${data.nextOrgId}/dashboard`;
     } catch (error) {
       setMessage({ type: "error", text: "An error occurred. Please try again." });
       setIsDeleting(false);
