@@ -34,7 +34,7 @@ export default async function OrganizationSettingsPage({
     redirect("/dashboard");
   }
 
-  const membership = memberships.find((m) => m.orgId === orgId);
+  const membership = memberships.find((m: { orgId: string }) => m.orgId === orgId);
 
   if (!membership) {
     redirect("/dashboard");

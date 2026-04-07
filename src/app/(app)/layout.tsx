@@ -6,11 +6,25 @@ import { prisma } from "@/lib/db";
 import AppSidebar from "@/components/layout/AppSidebar";
 import AppHeader from "@/components/layout/AppHeader";
 
+export const dynamic = 'force-dynamic';
+
+type UserOrg = {
+  id: string;
+  name: string;
+  slug: string | null;
+  role: "ORG_ADMIN" | "ORG_USER";
+};
+
 export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  if (isBuildPhase || process.env.SKIP_BUILD_STATIC_GENERATION) {
+    return children;
+  }
+
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -38,12 +52,17 @@ export default async function AppLayout({
   }
 
   // Build orgs list with roles
-  const userOrgs = memberships.map((m) => ({
-    id: m.organization.id,
-    name: m.organization.name,
-    slug: m.organization.slug,
-    role: m.role,
-  }));
+  const userOrgs: UserOrg[] = memberships.map(
+    (m: {
+      organization: { id: string; name: string; slug: string | null };
+      role: "ORG_ADMIN" | "ORG_USER";
+    }) => ({
+      id: m.organization.id,
+      name: m.organization.name,
+      slug: m.organization.slug,
+      role: m.role,
+    }),
+  );
 
   // Determine active org from URL if present, fallback to session
   let activeOrgId = session.user.activeOrgId;

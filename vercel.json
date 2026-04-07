@@ -1,0 +1,7 @@
+{
+  "build": {
+    "env": {
+      "SKIP_BUILD_STATIC_GENERATION": "1"
+    }
+  }
+}

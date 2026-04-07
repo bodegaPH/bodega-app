@@ -3,8 +3,20 @@ import { prisma } from "@/lib/db";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 import { emailSchema } from "@/lib/schemas";
-import { Prisma } from "@prisma/client";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+
+const isPrismaKnownRequestError = (
+  error: unknown,
+): error is { code: string; name: string } => {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof (error as { code?: unknown }).code === "string" &&
+    "name" in error &&
+    (error as { name?: unknown }).name === "PrismaClientKnownRequestError"
+  );
+};
 
 export const runtime = "nodejs";
 
@@ -87,16 +99,14 @@ export async function POST(req: Request) {
     );
   } catch (error) {
     // Handle duplicate email (P2002 - unique constraint violation)
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        return NextResponse.json(
-          { error: "This email is already registered. Please sign in instead." },
-          {
-            status: 409,
-            headers: createRateLimitHeaders(rateLimit),
-          }
-        );
-      }
+    if (isPrismaKnownRequestError(error) && error.code === "P2002") {
+      return NextResponse.json(
+        { error: "This email is already registered. Please sign in instead." },
+        {
+          status: 409,
+          headers: createRateLimitHeaders(rateLimit),
+        }
+      );
     }
 
     console.error("Sign-up error:", error);

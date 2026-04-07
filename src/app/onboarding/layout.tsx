@@ -6,11 +6,18 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
+export const dynamic = 'force-dynamic';
+
 export default async function OnboardingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  if (isBuildPhase || process.env.SKIP_BUILD_STATIC_GENERATION) {
+    return children;
+  }
+
   const session = await getServerSession(authOptions);
   
   // Must be authenticated

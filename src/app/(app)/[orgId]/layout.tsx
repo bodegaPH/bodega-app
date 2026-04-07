@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { ReactNode } from "react";
 import { OrgProvider } from "@/features/shared/OrgContext";
 
+export const dynamic = 'force-dynamic';
+
 export default async function OrgLayout({
   children,
   params,
@@ -12,6 +14,11 @@ export default async function OrgLayout({
   children: ReactNode;
   params: Promise<{ orgId: string }>;
 }) {
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  if (isBuildPhase || process.env.SKIP_BUILD_STATIC_GENERATION) {
+    return children;
+  }
+
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
@@ -30,7 +37,7 @@ export default async function OrgLayout({
     redirect("/onboarding/create-org");
   }
 
-  const userOrgIds = memberships.map((m) => m.orgId);
+  const userOrgIds = memberships.map((m: { orgId: string }) => m.orgId);
 
   // Validate that user is a member of the requested org
   if (!userOrgIds.includes(orgId)) {

@@ -7,18 +7,38 @@ const globalForPrisma = globalThis as unknown as {
   pool: Pool | undefined;
 };
 
-const connectionString = process.env.DATABASE_URL;
+function getPool(): Pool {
+  if (!globalForPrisma.pool) {
+    const connectionString = process.env.DATABASE_URL;
 
-if (!connectionString) {
-  throw new Error("DATABASE_URL is not set");
+    if (!connectionString) {
+      throw new Error("DATABASE_URL is not set");
+    }
+
+    globalForPrisma.pool = new Pool({ connectionString });
+  }
+
+  return globalForPrisma.pool;
 }
 
-const pool = globalForPrisma.pool ?? new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
+function getPrisma(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    const adapter = new PrismaPg(getPool());
+    globalForPrisma.prisma = new PrismaClient({ adapter });
+  }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.pool = pool;
-  globalForPrisma.prisma = prisma;
+  return globalForPrisma.prisma;
 }
+
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getPrisma();
+    const value = client[prop as keyof PrismaClient];
+
+    if (typeof value === "function") {
+      return value.bind(client);
+    }
+
+    return value;
+  },
+});
