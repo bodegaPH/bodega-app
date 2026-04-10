@@ -6,6 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcrypt";
 import type { SystemRole } from "@prisma/client";
+import { normalizeSystemRole } from "@/lib/system-role";
 
 /**
  * Shape of the user object as received in the JWT callback.
@@ -15,9 +16,9 @@ import type { SystemRole } from "@prisma/client";
 type IncomingUser = {
   id?: string | null;
   /** Present when the credentials provider returns the user. */
-  role?: SystemRole;
+  role?: SystemRole | "PLATFORM_ADMIN";
   /** Present when the Prisma adapter returns the raw DB row for OAuth users. */
-  systemRole?: SystemRole;
+  systemRole?: SystemRole | "PLATFORM_ADMIN";
 };
 
 const providers = [];
@@ -91,9 +92,9 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         const u = user as IncomingUser;
-        const role = u.role ?? u.systemRole ?? "USER";
+        const role = normalizeSystemRole(u.role ?? u.systemRole ?? "USER");
         token.id = u.id ?? token.id;
-        token.role = role as SystemRole;
+        token.role = role;
       }
       // Allow updating activeOrgId via update() call
       if (trigger === "update" && session?.activeOrgId !== undefined) {
@@ -104,7 +105,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
-        session.user.role = token.role ?? "USER";
+        session.user.role = normalizeSystemRole(token.role ?? "USER");
         session.user.activeOrgId = token.activeOrgId ?? null;
       }
       return session;

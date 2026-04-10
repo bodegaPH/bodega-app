@@ -16,6 +16,7 @@ enum MembershipRole {
 enum SystemRole {
   USER
   SYSTEM_ADMIN
+  PLATFORM_ADMIN
 }
 
 enum MovementType {
