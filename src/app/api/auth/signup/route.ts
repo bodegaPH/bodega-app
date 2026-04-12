@@ -41,6 +41,7 @@ const signupSchema = z
       .min(12, "Password must be at least 12 characters")
       .max(72, "Password must not exceed 72 characters"),
     name: z.string().optional(),
+    inviteToken: z.string().optional(),
   })
   .strict();
 
