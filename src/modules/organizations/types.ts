@@ -1,10 +1,17 @@
 export type MembershipRole = "ORG_ADMIN" | "ORG_USER";
 
+export type OrganizationOwner = {
+  id: string;
+  name: string | null;
+  email: string | null;
+};
+
 export type OrganizationMember = {
   id: string;
   name: string | null;
   email: string | null;
   role: MembershipRole;
+  isOwner: boolean;
 };
 
 export type OrganizationDataCounts = {
@@ -25,9 +32,19 @@ export type AddMemberPayload = {
 
 export type DeleteOrganizationOptions = {
   requesterUserId: string;
-  force?: boolean;
+  ownerConfirmation?: string;
 };
 
 export type DeleteOrganizationResult =
   | { deleted: true; nextOrgId: string }
   | { deleted: false; requiresConfirmation: true; details: OrganizationDataCounts };
+
+export type TransferOwnershipPayload = {
+  targetUserId: string;
+  actorUserId: string;
+};
+
+export type TransferOwnershipResult = {
+  organizationId: string;
+  owner: OrganizationOwner;
+};

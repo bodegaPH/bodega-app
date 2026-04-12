@@ -37,8 +37,14 @@ export async function createOrganization(name: string, userId: string) {
       data: {
         name,
         slug,
+        ownerId: userId,
       },
-      select: { id: true, name: true, slug: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        owner: { select: { id: true, name: true, email: true } },
+      },
     });
 
     await tx.membership.create({
@@ -64,6 +70,7 @@ export async function createOrganization(name: string, userId: string) {
     id: organization.id,
     name: organization.name,
     slug: organization.slug ?? slug,
+    owner: organization.owner,
   };
 }
 
@@ -79,6 +86,17 @@ export async function findOrganizationName(orgId: string) {
   return prisma.organization.findUnique({
     where: { id: orgId },
     select: { name: true },
+  });
+}
+
+export async function findOrganizationGovernance(orgId: string) {
+  return prisma.organization.findUnique({
+    where: { id: orgId },
+    select: {
+      id: true,
+      ownerId: true,
+      owner: { select: { id: true, name: true, email: true } },
+    },
   });
 }
 
@@ -186,5 +204,48 @@ export async function updateMembershipRole(orgId: string, userId: string, role: 
         select: { id: true, name: true, email: true },
       },
     },
+  });
+}
+
+export async function transferOwnership(orgId: string, fromUserId: string, toUserId: string) {
+  return prisma.$transaction(async (tx) => {
+    const organization = await tx.organization.findUnique({
+      where: { id: orgId },
+      select: { id: true, ownerId: true },
+    });
+
+    if (!organization) {
+      return null;
+    }
+
+    if (organization.ownerId !== fromUserId) {
+      return { denied: true as const };
+    }
+
+    const targetMembership = await tx.membership.findUnique({
+      where: { userId_orgId: { userId: toUserId, orgId } },
+      select: { userId: true },
+    });
+
+    if (!targetMembership) {
+      return { invalidTarget: true as const };
+    }
+
+    await tx.membership.update({
+      where: { userId_orgId: { userId: toUserId, orgId } },
+      data: { role: "ORG_ADMIN" },
+    });
+
+    const updatedOrg = await tx.organization.update({
+      where: { id: orgId },
+      data: { ownerId: toUserId },
+      select: {
+        id: true,
+        ownerId: true,
+        owner: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    return { denied: false as const, invalidTarget: false as const, organization: updatedOrg };
   });
 }
