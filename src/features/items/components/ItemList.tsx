@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArchiveX, Package, Pencil, RotateCcw, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
+import { extractApiErrorMessage } from "@/lib/client-errors";
 import ItemForm, { type ItemPayload } from "./ItemForm";
 import ItemDeactivateDialog from "./ItemDeactivateDialog";
 
@@ -37,12 +38,12 @@ export default function ItemList({ initialItems }: ItemListProps) {
     };
 
     if (response.status === 403) {
-      setInlineError(data.error ?? "You do not have access to this organization");
+      setInlineError(extractApiErrorMessage(data, "You do not have access to this organization"));
       return;
     }
 
     if (!response.ok) {
-      setInlineError(data.error ?? "Unable to load items");
+      setInlineError(extractApiErrorMessage(data, "Unable to load items"));
       return;
     }
 

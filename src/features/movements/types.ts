@@ -7,4 +7,9 @@ export type {
   CreateMovementInput,
   GetMovementsFilters,
   ListMovementsResponse,
+  MovementExportMode,
+  MovementExportFilters,
+  MovementExportRequest,
+  MovementExportSuccess,
+  MovementExportErrorCode,
 } from "@/modules/movements/types";

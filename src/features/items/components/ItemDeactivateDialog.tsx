@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Button from "@/components/ui/Button";
+import { extractApiErrorMessage } from "@/lib/client-errors";
 import type { ItemPayload } from "./ItemForm";
 
 interface ItemDeactivateDialogProps {
@@ -44,15 +45,15 @@ export default function ItemDeactivateDialog({
         return;
       }
 
-      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      const data: unknown = await response.json().catch(() => ({}));
 
       if (response.status === 403) {
-        setError(data.error ?? "You do not have access to this organization");
+        setError(extractApiErrorMessage(data, "You do not have access to this organization"));
         return;
       }
 
       if (!response.ok) {
-        setError(data.error ?? `Unable to ${actionLabel.toLowerCase()} item`);
+        setError(extractApiErrorMessage(data, `Unable to ${actionLabel.toLowerCase()} item`));
         return;
       }
 

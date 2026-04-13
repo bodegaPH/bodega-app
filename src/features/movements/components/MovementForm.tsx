@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
+import { extractApiErrorMessage } from "@/lib/client-errors";
 
 export interface MovementFormProps {
   open: boolean;
@@ -29,6 +30,7 @@ export default function MovementForm({
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
 
   useEffect(() => {
     if (!open) return;
@@ -86,19 +88,26 @@ export default function MovementForm({
       return;
     }
 
+    if (type !== "ADJUSTMENT" && reason.trim()) {
+      setError("Reason is only allowed for adjustments");
+      return;
+    }
+
     setLoading(true);
 
     try {
+      const payload = {
+        itemId,
+        locationId,
+        type,
+        quantity: qtyNum,
+        ...(type === "ADJUSTMENT" ? { reason: reason.trim() } : {}),
+      };
+
       const response = await fetch("/api/movements", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          itemId,
-          locationId,
-          type,
-          quantity: qtyNum,
-          reason: type === "ADJUSTMENT" ? reason.trim() : null,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (response.status === 401) {
@@ -106,12 +115,10 @@ export default function MovementForm({
         return;
       }
 
-      const data = (await response.json().catch(() => ({}))) as {
-        error?: string;
-      };
+      const data: unknown = await response.json().catch(() => ({}));
 
       if (response.status === 403) {
-        setError(data.error ?? "You do not have access to this organization");
+        setError(extractApiErrorMessage(data, "You do not have access to this organization"));
         return;
       }
 
@@ -121,17 +128,17 @@ export default function MovementForm({
       }
 
       if (response.status === 409) {
-        setError(data.error ?? "Insufficient stock");
+        setError(extractApiErrorMessage(data, "Insufficient stock"));
         return;
       }
 
       if (response.status === 400) {
-        setError(data.error ?? "Invalid request");
+        setError(extractApiErrorMessage(data, "Invalid request"));
         return;
       }
 
       if (!response.ok) {
-        setError(data.error ?? "Unable to record movement");
+        setError(extractApiErrorMessage(data, "Unable to record movement"));
         return;
       }
 

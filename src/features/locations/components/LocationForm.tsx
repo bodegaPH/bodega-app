@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
+import { extractApiErrorMessage } from "@/lib/client-errors";
 
 interface LocationPayload {
   id: string;
@@ -75,15 +76,15 @@ export default function LocationForm({
         return;
       }
 
-      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      const data: unknown = await response.json().catch(() => ({}));
 
       if (response.status === 403) {
-        setError(data.error ?? "You do not have access to this organization");
+        setError(extractApiErrorMessage(data, "You do not have access to this organization"));
         return;
       }
 
       if (!response.ok) {
-        setError(data.error ?? "Unable to save location");
+        setError(extractApiErrorMessage(data, "Unable to save location"));
         return;
       }
 

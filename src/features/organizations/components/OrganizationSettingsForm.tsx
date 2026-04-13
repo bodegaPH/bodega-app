@@ -61,10 +61,38 @@ export default function OrganizationSettingsForm({
   const [inviteRole, setInviteRole] = useState<"ORG_ADMIN" | "ORG_USER">("ORG_USER");
   const [inviteRetryAfter, setInviteRetryAfter] = useState<number | null>(null);
   const [memberActionUserId, setMemberActionUserId] = useState<string | null>(null);
+  const [inviteActionId, setInviteActionId] = useState<string | null>(null);
   const router = useRouter();
   const { data: session, update } = useSession();
   const isOwner = owner.id === currentUserId;
   const transferCandidates = members.filter((member) => member.id !== owner.id);
+
+  async function parseJsonBody(response: Response): Promise<unknown> {
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
+
+  function getErrorMessage(body: unknown, fallback: string): string {
+    if (!body || typeof body !== "object") {
+      return fallback;
+    }
+
+    const errorValue = (body as { error?: unknown }).error;
+    if (typeof errorValue === "string") {
+      return errorValue;
+    }
+    if (errorValue && typeof errorValue === "object") {
+      const message = (errorValue as { message?: unknown }).message;
+      if (typeof message === "string") {
+        return message;
+      }
+    }
+
+    return fallback;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -228,70 +256,104 @@ export default function OrganizationSettingsForm({
 
   async function handleResendInvite(inviteId: string) {
     setMessage(null);
-    const res = await fetch(`/api/organizations/${organization.id}/invites/${inviteId}`, {
-      method: "POST",
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      const retryAfter = Number(res.headers.get("Retry-After") || 0);
-      setInviteRetryAfter(retryAfter > 0 ? retryAfter : null);
-      setMessage({ type: "error", text: data.error?.message || data.error || "Failed to resend invite" });
-      return;
+    setInviteActionId(inviteId);
+
+    try {
+      const res = await fetch(`/api/organizations/${organization.id}/invites/${inviteId}`, {
+        method: "POST",
+      });
+      const data = await parseJsonBody(res);
+
+      if (!res.ok) {
+        const retryAfter = Number(res.headers.get("Retry-After") || 0);
+        setInviteRetryAfter(retryAfter > 0 ? retryAfter : null);
+        setMessage({ type: "error", text: getErrorMessage(data, "Failed to resend invite") });
+        return;
+      }
+
+      setMessage({ type: "success", text: "Invitation resent" });
+      router.refresh();
+    } catch {
+      setMessage({ type: "error", text: "Unable to resend invite right now." });
+    } finally {
+      setInviteActionId(null);
     }
-    setMessage({ type: "success", text: "Invitation resent" });
-    router.refresh();
   }
 
   async function handleRevokeInvite(inviteId: string) {
     setMessage(null);
-    const res = await fetch(`/api/organizations/${organization.id}/invites/${inviteId}`, {
-      method: "DELETE",
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setMessage({ type: "error", text: data.error?.message || data.error || "Failed to revoke invite" });
-      return;
+    setInviteActionId(inviteId);
+
+    try {
+      const res = await fetch(`/api/organizations/${organization.id}/invites/${inviteId}`, {
+        method: "DELETE",
+      });
+      const data = await parseJsonBody(res);
+
+      if (!res.ok) {
+        setMessage({ type: "error", text: getErrorMessage(data, "Failed to revoke invite") });
+        return;
+      }
+
+      setMessage({ type: "success", text: "Invitation revoked" });
+      router.refresh();
+    } catch {
+      setMessage({ type: "error", text: "Unable to revoke invite right now." });
+    } finally {
+      setInviteActionId(null);
     }
-    setMessage({ type: "success", text: "Invitation revoked" });
-    router.refresh();
   }
 
   async function handleRoleChange(userId: string, role: "ORG_ADMIN" | "ORG_USER") {
     setMemberActionUserId(userId);
     setMessage(null);
-    const res = await fetch(`/api/organizations/${organization.id}/members`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, role }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setMessage({ type: "error", text: data.error || "Failed to update member role" });
+
+    try {
+      const res = await fetch(`/api/organizations/${organization.id}/members`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, role }),
+      });
+      const data = await parseJsonBody(res);
+
+      if (!res.ok) {
+        setMessage({ type: "error", text: getErrorMessage(data, "Failed to update member role") });
+        return;
+      }
+
+      setMessage({ type: "success", text: "Member role updated" });
+      router.refresh();
+    } catch {
+      setMessage({ type: "error", text: "Unable to update member role right now." });
+    } finally {
       setMemberActionUserId(null);
-      return;
     }
-    setMessage({ type: "success", text: "Member role updated" });
-    setMemberActionUserId(null);
-    router.refresh();
   }
 
   async function handleRemoveMember(userId: string) {
     setMemberActionUserId(userId);
     setMessage(null);
-    const res = await fetch(`/api/organizations/${organization.id}/members`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setMessage({ type: "error", text: data.error || "Failed to remove member" });
+
+    try {
+      const res = await fetch(`/api/organizations/${organization.id}/members`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await parseJsonBody(res);
+
+      if (!res.ok) {
+        setMessage({ type: "error", text: getErrorMessage(data, "Failed to remove member") });
+        return;
+      }
+
+      setMessage({ type: "success", text: "Member removed" });
+      router.refresh();
+    } catch {
+      setMessage({ type: "error", text: "Unable to remove member right now." });
+    } finally {
       setMemberActionUserId(null);
-      return;
     }
-    setMessage({ type: "success", text: "Member removed" });
-    setMemberActionUserId(null);
-    router.refresh();
   }
 
   return (
@@ -436,10 +498,24 @@ export default function OrganizationSettingsForm({
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button type="button" variant="ghost" size="sm" onClick={() => handleResendInvite(invite.id)}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleResendInvite(invite.id)}
+                      loading={inviteActionId === invite.id}
+                      disabled={inviteActionId !== null}
+                    >
                       Resend
                     </Button>
-                    <Button type="button" variant="danger" size="sm" onClick={() => handleRevokeInvite(invite.id)}>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleRevokeInvite(invite.id)}
+                      loading={inviteActionId === invite.id}
+                      disabled={inviteActionId !== null}
+                    >
                       Revoke
                     </Button>
                   </div>

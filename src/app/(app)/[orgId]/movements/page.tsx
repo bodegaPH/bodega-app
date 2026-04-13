@@ -1,6 +1,7 @@
 import { MovementFilters, MovementList } from "@/features/movements";
 import { getMovements } from "@/features/movements/server";
 import { getItems } from "@/features/items/server";
+import { getLocations } from "@/features/locations/server";
 import type { MovementDTO } from "@/features/movements/server";
 
 interface PageProps {
@@ -31,14 +32,17 @@ export default async function MovementsPage({
 
   const itemId =
     typeof queryParams.itemId === "string" ? queryParams.itemId : undefined;
+  const locationId =
+    typeof queryParams.locationId === "string" ? queryParams.locationId : undefined;
   const from = parseDateParam(queryParams.from);
   const to = parseDateParam(queryParams.to);
   const page = parsePageParam(queryParams.page, 1);
   const limit = 50;
 
-  const [movementsData, items] = await Promise.all([
-    getMovements(orgId, { itemId, from, to, page, limit }),
+  const [movementsData, items, locations] = await Promise.all([
+    getMovements(orgId, { itemId, locationId, from, to, page, limit }),
     getItems(orgId),
+    getLocations(orgId),
   ]);
 
   return (
@@ -55,7 +59,7 @@ export default async function MovementsPage({
 
         <div className="flex flex-col gap-6">
           <div className="w-full">
-            <MovementFilters items={items} />
+            <MovementFilters items={items} locations={locations} />
           </div>
 
           <div className="w-full">

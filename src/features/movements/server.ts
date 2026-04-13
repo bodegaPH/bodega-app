@@ -3,8 +3,14 @@
 export {
   MovementApiError,
   InsufficientStockError,
+  InvalidMovementExportFiltersError,
+  MovementExportCapExceededError,
+  MovementExportTimeoutError,
+  MovementExportRateLimitedError,
+  MovementExportServerError,
   MovementType,
   createMovement,
+  exportMovementsCsv,
   getMovements,
   getDataCount,
 } from "@/modules/movements";
@@ -14,4 +20,9 @@ export type {
   CreateMovementInput,
   GetMovementsFilters,
   ListMovementsResponse,
+  MovementExportMode,
+  MovementExportFilters,
+  MovementExportRequest,
+  MovementExportSuccess,
+  MovementExportErrorCode,
 } from "@/modules/movements";

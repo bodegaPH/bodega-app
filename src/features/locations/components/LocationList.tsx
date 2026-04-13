@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Star, MapPin, Edit2, Trash2, CheckCircle, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
+import { extractApiErrorMessage } from "@/lib/client-errors";
 import LocationForm from "./LocationForm";
 import LocationDeleteDialog from "./LocationDeleteDialog";
 
@@ -33,20 +34,17 @@ export default function LocationList({ initialLocations }: LocationListProps) {
       return;
     }
 
-    const data = (await response.json().catch(() => ({}))) as {
-      locations?: LocationRecord[];
-      error?: string;
-    };
+    const data = await response.json().catch(() => ({}));
 
     if (response.status === 403) {
       setInlineError(
-        data.error ?? "You do not have access to this organization",
+        extractApiErrorMessage(data, "You do not have access to this organization"),
       );
       return;
     }
 
     if (!response.ok) {
-      setInlineError(data.error ?? "Unable to load locations");
+      setInlineError(extractApiErrorMessage(data, "Unable to load locations"));
       return;
     }
 
@@ -69,19 +67,17 @@ export default function LocationList({ initialLocations }: LocationListProps) {
       return;
     }
 
-    const data = (await response.json().catch(() => ({}))) as {
-      error?: string;
-    };
+    const data = await response.json().catch(() => ({}));
 
     if (response.status === 403) {
       setInlineError(
-        data.error ?? "You do not have access to this organization",
+        extractApiErrorMessage(data, "You do not have access to this organization"),
       );
       return;
     }
 
     if (!response.ok) {
-      setInlineError(data.error ?? "Unable to set default location");
+      setInlineError(extractApiErrorMessage(data, "Unable to set default location"));
       return;
     }
 

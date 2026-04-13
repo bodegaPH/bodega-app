@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
+import { extractApiErrorMessage } from "@/lib/client-errors";
 
 export interface ItemPayload {
   id: string;
@@ -29,6 +30,7 @@ export default function ItemForm({ open, mode, item, onClose, onSuccess }: ItemF
   const [lowStockThreshold, setLowStockThreshold] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
 
   useEffect(() => {
     if (!open) {
@@ -90,7 +92,7 @@ export default function ItemForm({ open, mode, item, onClose, onSuccess }: ItemF
       ...(mode === "create" ? { sku: trimmedSku } : {}),
       unit: trimmedUnit,
       category: trimmedCategory || null,
-      lowStockThreshold: trimmedThreshold || null,
+      ...(trimmedThreshold ? { lowStockThreshold: trimmedThreshold } : {}),
     };
 
     try {
@@ -105,15 +107,15 @@ export default function ItemForm({ open, mode, item, onClose, onSuccess }: ItemF
         return;
       }
 
-      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      const data: unknown = await response.json().catch(() => ({}));
 
       if (response.status === 403) {
-        setError(data.error ?? "You do not have access to this organization");
+        setError(extractApiErrorMessage(data, "You do not have access to this organization"));
         return;
       }
 
       if (!response.ok) {
-        setError(data.error ?? "Unable to save item");
+        setError(extractApiErrorMessage(data, "Unable to save item"));
         return;
       }
 
