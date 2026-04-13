@@ -35,6 +35,7 @@ vi.mock("@/features/movements/server", async () => {
 import { POST } from "../route";
 import {
   InvalidMovementExportFiltersError,
+  MovementExportCapExceededError,
   MovementExportRateLimitedError,
 } from "@/features/movements/server";
 
@@ -63,6 +64,13 @@ describe("movements export route", () => {
     );
 
     expect(res.status).toBe(401);
+    await expect(res.json()).resolves.toEqual({
+      error: {
+        message: "Unauthorized",
+        supportCode: "MOVEMENT_EXPORT_UNAUTHORIZED",
+        requestId: expect.any(String),
+      },
+    });
   });
 
   it("returns non-enumerating not found for non-members", async () => {
@@ -77,7 +85,13 @@ describe("movements export route", () => {
     );
 
     expect(res.status).toBe(404);
-    await expect(res.json()).resolves.toEqual({ error: { message: "Not found" } });
+    await expect(res.json()).resolves.toEqual({
+      error: {
+        message: "Not found",
+        supportCode: "MOVEMENT_EXPORT_NOT_FOUND",
+        requestId: expect.any(String),
+      },
+    });
   });
 
   it("returns success for authorized members", async () => {
@@ -124,6 +138,8 @@ describe("movements export route", () => {
       error: {
         code: "INVALID_FILTERS",
         message: "Broad export requires explicit confirmation",
+        supportCode: "MOVEMENT_EXPORT_INVALID_FILTERS",
+        requestId: expect.any(String),
       },
     });
   });
@@ -146,6 +162,33 @@ describe("movements export route", () => {
         code: "RATE_LIMITED",
         message: "Too many export requests. Please try again shortly.",
         retryAfterSeconds: 9,
+        supportCode: "MOVEMENT_EXPORT_RATE_LIMITED",
+        requestId: expect.any(String),
+      },
+    });
+  });
+
+  it("includes request id and support code on cap exceeded", async () => {
+    mocks.exportMovementsCsv.mockRejectedValue(new MovementExportCapExceededError());
+
+    const res = await POST(
+      new Request("http://localhost/api/movements/export", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-request-id": "req-exp-1",
+        },
+        body: JSON.stringify({ orgId: "org_1", mode: "filtered", filters: {} }),
+      }),
+    );
+
+    expect(res.status).toBe(422);
+    await expect(res.json()).resolves.toEqual({
+      error: {
+        code: "EXPORT_CAP_EXCEEDED",
+        message: "Export exceeds sync limit. Please narrow your filters and try again.",
+        supportCode: "MOVEMENT_EXPORT_EXPORT_CAP_EXCEEDED",
+        requestId: "req-exp-1",
       },
     });
   });
