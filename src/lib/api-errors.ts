@@ -4,6 +4,9 @@ export interface ApiErrorPayload {
   message: string;
   code?: string;
   details?: unknown;
+  supportCode?: string;
+  requestId?: string;
+  retryAfterSeconds?: number;
 }
 
 export interface ApiErrorResponse {
@@ -13,6 +16,9 @@ export interface ApiErrorResponse {
 interface ApiErrorOptions {
   code?: string;
   details?: unknown;
+  supportCode?: string;
+  requestId?: string;
+  retryAfterSeconds?: number;
   headers?: HeadersInit;
 }
 
@@ -27,6 +33,11 @@ export function apiError(
         message,
         ...(options?.code ? { code: options.code } : {}),
         ...(options?.details !== undefined ? { details: options.details } : {}),
+        ...(options?.supportCode ? { supportCode: options.supportCode } : {}),
+        ...(options?.requestId ? { requestId: options.requestId } : {}),
+        ...(typeof options?.retryAfterSeconds === "number"
+          ? { retryAfterSeconds: options.retryAfterSeconds }
+          : {}),
       },
     } satisfies ApiErrorResponse,
     {
