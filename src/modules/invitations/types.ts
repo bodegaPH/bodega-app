@@ -26,6 +26,7 @@ export type CreateInvitationInput = {
   inviterUserId: string;
   invitedEmail: string;
   role: MembershipRole;
+  requestId?: string;
 };
 
 export type CreateInvitationResult = {
