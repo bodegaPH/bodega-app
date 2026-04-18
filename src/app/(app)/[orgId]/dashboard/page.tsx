@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getDashboardData, getIndicators } from "@/features/dashboard/server";
 import { InventoryAlerts } from "@/features/dashboard/components/InventoryAlerts";
+import { InventoryFlowChart } from "@/features/dashboard/components/InventoryFlowChart";
 import type { RecentMovement, LowStockItem } from "@/features/dashboard/server";
 
 function formatQuantity(quantity: string) {
@@ -13,7 +14,7 @@ export default async function DashboardPage({
   params: Promise<{ orgId: string }>;
 }) {
   const { orgId } = await params;
-  const [{ orgName, stats, recentActivity, lowStock }, indicators] =
+  const [{ orgName, stats, recentActivity, lowStock, volumeData }, indicators] =
     await Promise.all([getDashboardData(orgId), getIndicators(orgId)]);
 
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -24,43 +25,58 @@ export default async function DashboardPage({
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-medium text-white tracking-tight">
-          {orgName}
+    <div className="flex flex-col gap-px bg-white/10 p-px rounded-none overflow-hidden max-w-[1800px] animate-in fade-in duration-500 shadow-2xl">
+      <div className="flex items-center justify-between bg-zinc-950 p-4">
+        <h1 className="text-[11px] font-mono tracking-[0.2em] text-zinc-400 uppercase">
+           {orgName} [SYSTEM_MATRIX_ACTIVE]
         </h1>
       </div>
 
-      {/* Inventory Alerts */}
-      <InventoryAlerts indicators={indicators} />
-
-      {/* Top KPIs Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          { label: "Total Items", value: stats.totalItems },
-          { label: "Total Movements", value: stats.totalMovements },
-          { label: "Active Locations", value: stats.totalLocations },
-        ].map((stat, i) => (
-          <div
-            key={i}
-            className="rounded-lg bg-zinc-900/50 border border-white/5 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] flex flex-col justify-between"
-          >
-            <p className="text-xs font-medium text-zinc-500 tracking-wider uppercase mb-3">
-              {stat.label}
-            </p>
-            <p className="text-3xl font-mono tracking-tight text-white">
-              {stat.value}
-            </p>
-          </div>
-        ))}
+      {/* Inventory Alerts (Full Width Strip) */}
+      <div className="bg-zinc-950">
+        <InventoryAlerts indicators={indicators} />
       </div>
 
-      {/* Main Bento Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Top KPIs Row & Chart Array */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-px bg-white/10">
+        {/* Left Col: KPI Strip */}
+        <div className="lg:col-span-1 grid grid-cols-1 gap-px bg-white/10">
+          {[
+            { label: "Total Items", value: stats.totalItems },
+            { label: "Total Movements", value: stats.totalMovements },
+            { label: "Active Locations", value: stats.totalLocations },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="bg-zinc-950 p-6 flex flex-col justify-center hover:bg-zinc-900/80 transition-colors"
+            >
+              <p className="text-[10px] font-mono text-zinc-500 tracking-[0.2em] uppercase mb-2">
+                {stat.label}
+              </p>
+              <p className="text-3xl font-mono tracking-tight text-white">
+                {stat.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Right Col: Volume Chart */}
+        <div className="lg:col-span-3 bg-zinc-950 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[10px] font-mono text-zinc-500 tracking-[0.2em] uppercase">
+              Inventory Volume Matrix
+            </h2>
+          </div>
+          <InventoryFlowChart data={volumeData} />
+        </div>
+      </div>
+
+      {/* Lower Bento Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-white/10">
         {/* Left Col: Recent Activity */}
-        <div className="lg:col-span-2 flex flex-col rounded-lg bg-zinc-900/30 border border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] overflow-hidden">
-          <div className="px-5 py-4 border-b border-white/5 bg-zinc-900/20 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-zinc-300">
+        <div className="lg:col-span-2 flex flex-col bg-zinc-950 overflow-hidden">
+          <div className="px-5 py-4 border-b border-white/10 bg-zinc-900/20 flex items-center justify-between">
+            <h2 className="text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-300">
               Recent Activity
             </h2>
           </div>
@@ -71,12 +87,12 @@ export default async function DashboardPage({
               </div>
             ) : (
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-zinc-900/50 text-zinc-500 border-b border-white/5">
-                  <tr>
-                    <th className="px-5 py-3 font-medium">Type</th>
-                    <th className="px-5 py-3 font-medium">Item</th>
-                    <th className="px-5 py-3 font-medium text-right">Qty</th>
-                    <th className="px-5 py-3 font-medium text-right">Date</th>
+                <thead className="bg-zinc-900/50 text-zinc-500 border-b border-white/10">
+                  <tr className="text-[10px] font-mono uppercase tracking-widest leading-none">
+                    <th className="px-5 py-4 font-bold">Type</th>
+                    <th className="px-5 py-4 font-bold">Item</th>
+                    <th className="px-5 py-4 font-bold text-right">Qty</th>
+                    <th className="px-5 py-4 font-bold text-right">Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
@@ -88,13 +104,13 @@ export default async function DashboardPage({
                       <td className="px-5 py-3">
                         <span className="inline-flex items-center gap-2">
                           {movement.type === "RECEIVE" && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            <span className="w-1.5 h-1.5 rounded-none bg-emerald-500" />
                           )}
                           {movement.type === "ISSUE" && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                            <span className="w-1.5 h-1.5 rounded-none bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
                           )}
                           {movement.type === "ADJUSTMENT" && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                            <span className="w-1.5 h-1.5 rounded-none bg-amber-500" />
                           )}
                           <span className="text-xs font-medium tracking-wide text-zinc-400 group-hover:text-zinc-200 transition-colors">
                             {movement.type}
@@ -141,12 +157,12 @@ export default async function DashboardPage({
         </div>
 
         {/* Right Col */}
-        <div className="space-y-6">
+        <div className="flex flex-col gap-px bg-white/10">
           {/* Needs Attention */}
-          <div className="rounded-lg bg-zinc-900/30 border border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] overflow-hidden">
-            <div className="px-5 py-4 border-b border-white/5 bg-zinc-900/20">
-              <h2 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
+          <div className="flex flex-col bg-zinc-950 overflow-visible">
+            <div className="px-5 py-4 border-b border-white/10 bg-zinc-900/20">
+              <h2 className="text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-300 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-none bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
                 Needs Attention
               </h2>
             </div>
@@ -161,8 +177,8 @@ export default async function DashboardPage({
                       stroke="currentColor"
                     >
                       <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                        strokeLinecap="square"
+                        strokeLinejoin="miter"
                         strokeWidth={2}
                         d="M5 13l4 4L19 7"
                       />
@@ -204,22 +220,21 @@ export default async function DashboardPage({
           </div>
 
           {/* Quick Actions */}
-          <div className="rounded-lg bg-zinc-900/30 border border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] overflow-hidden">
-            <div className="px-5 py-4 border-b border-white/5 bg-zinc-900/20">
-              <h2 className="text-sm font-medium text-zinc-300">
-                Quick Actions
+          <div className="flex flex-col bg-zinc-950 overflow-visible">
+            <div className="px-5 py-4 border-b border-white/10 bg-zinc-900/20">
+              <h2 className="text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-300">
+                Quick Commands
               </h2>
             </div>
-            <div className="p-5 flex flex-col sm:flex-row gap-3">
               <Link
                 href={`/${orgId}/movements`}
-                className="flex-1 inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] active:scale-[0.98]"
+                className="flex-1 inline-flex items-center justify-center px-4 py-3 text-[11px] uppercase tracking-[0.2em] font-mono font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-none transition-all shadow-[0_5px_20px_rgba(99,102,241,0.25)] border border-indigo-400/20"
               >
-                Record Movement
+                Record Move
               </Link>
               <Link
                 href={`/${orgId}/items`}
-                className="flex-1 inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-zinc-300 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-all active:scale-[0.98]"
+                className="flex-1 inline-flex items-center justify-center px-4 py-3 text-[11px] uppercase tracking-[0.2em] font-mono font-bold text-zinc-300 bg-zinc-900 hover:bg-zinc-850 border border-white/10 rounded-none transition-all"
               >
                 Add Item
               </Link>
@@ -227,6 +242,5 @@ export default async function DashboardPage({
           </div>
         </div>
       </div>
-    </div>
-  );
+  )
 }

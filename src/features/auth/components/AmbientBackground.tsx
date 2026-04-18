@@ -51,16 +51,16 @@ export default function AmbientBackground() {
 
   // Array of tailwind classes for the scanner
   const hoverClasses = [
-    'hover:bg-blue-500/[0.15]',
     'hover:bg-indigo-500/[0.15]',
-    'hover:bg-cyan-500/[0.15]'
+    'hover:bg-indigo-500/[0.15]',
+    'hover:bg-indigo-500/[0.15]'
   ] as const;
 
   // Base RGB values for the static opacities
   const staticColors = [
-    '59, 130, 246', // blue-500
     '99, 102, 241', // indigo-500
-    '6, 182, 212'   // cyan-500
+    '99, 102, 241', // indigo-500
+    '99, 102, 241'  // indigo-500
   ] as const;
 
   return (
@@ -105,6 +105,26 @@ export default function AmbientBackground() {
             <div className={`absolute inset-0 z-10 bg-white/0 transition-colors duration-[1500ms] hover:duration-75 ${hoverClasses[cell.colorIndex]}`} />
           </div>
         ))}
+      </div>
+
+      {/* Brand Overlay */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none select-none">
+        <svg 
+          className="w-24 h-24 mb-6 opacity-90 drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]" 
+          viewBox="0 0 20 20" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M1.75 1.75H10.75L16.75 6.25L12.75 9.75L16.75 13.25L10.75 17.75H1.75V1.75Z" stroke="#6366F1" strokeWidth={2} strokeLinecap="square" strokeLinejoin="miter"/>
+        </svg>
+        <div className="flex flex-col items-center gap-2.5">
+          <span className="text-xs font-mono uppercase tracking-[0.3em] text-indigo-500">
+            SECURE INVENTORY MANAGEMENT
+          </span>
+          <span className="text-lg font-mono text-zinc-200 tracking-[0.15em] uppercase">
+            For the modern enterprise
+          </span>
+        </div>
       </div>
 
       {/* A dark vignette to fade out the edges */}

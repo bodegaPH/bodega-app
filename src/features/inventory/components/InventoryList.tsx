@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Package, Plus, ArrowRightLeft } from "lucide-react";
+import { TokensIcon as Package, PlusIcon as Plus, UpdateIcon as ArrowRightLeft } from "@radix-ui/react-icons";
 import Button from "@/components/ui/Button";
 import { MovementForm } from "@/features/movements";
 import { useRouter } from "next/navigation";
@@ -46,18 +46,18 @@ export default function InventoryList({ inventory, items, locations }: Inventory
 
   return (
     <>
-      <div className="rounded-lg bg-zinc-900/30 backdrop-blur-xl border border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] p-6 sm:p-8">
+      <div className="bg-zinc-950 border border-white/10 p-6 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-white tracking-tight">Current Stock</h2>
-            <p className="mt-1.5 text-sm text-zinc-500">
+            <h2 className="text-lg font-mono font-bold uppercase tracking-[0.2em] text-white">Current Stock</h2>
+            <p className="mt-1 text-[10px] uppercase font-mono tracking-widest text-zinc-500">
               View current inventory levels across all locations.
             </p>
           </div>
           <div className="flex gap-2">
             <ExportButton />
-            <Button onClick={() => handleRecordMovement()} className="flex items-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-none transition-colors border border-transparent">
-              <Plus className="h-4 w-4" />
+            <Button onClick={() => handleRecordMovement()} className="gap-2 uppercase text-[10px]">
+              <Plus className="h-3.5 w-3.5" />
               Record Movement
             </Button>
           </div>
@@ -65,22 +65,22 @@ export default function InventoryList({ inventory, items, locations }: Inventory
 
         <div className="mt-6">
           {inventory.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.01] px-4 py-16 text-center">
-              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-md border border-blue-500/20 bg-blue-500/10">
-                <Package className="h-6 w-6 text-blue-400" />
+            <div className="flex flex-col items-center justify-center border-y border-dashed border-white/10 bg-black px-4 py-16 text-center">
+              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-none border border-indigo-500/20 bg-indigo-500/10">
+                <Package className="h-6 w-6 text-indigo-400" />
               </div>
-              <h3 className="mb-2 text-lg font-medium text-zinc-200 tracking-tight">No inventory yet</h3>
-              <p className="mb-8 max-w-sm text-sm leading-relaxed text-zinc-500">
-                Record your first stock movement to start tracking inventory.
+              <h3 className="mb-2 text-sm font-mono tracking-widest uppercase text-zinc-200">No inventory yet</h3>
+              <p className="mb-8 max-w-sm text-[10px] font-mono tracking-wide leading-relaxed text-zinc-500">
+                RECORD YOUR FIRST STOCK MOVEMENT TO START TRACKING.
               </p>
-              <Button onClick={() => handleRecordMovement()} className="rounded-md border border-white/5 bg-white/5 hover:bg-white/10 text-white shadow-none">
+              <Button variant="ghost" onClick={() => handleRecordMovement()}>
                 Record First Movement
               </Button>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-white/5 bg-white/[0.02]">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-900/50 text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
+            <div className="border border-white/10 bg-black">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-zinc-950 border-b border-white/10 text-[9px] uppercase tracking-widest font-mono text-zinc-500">
                   <tr>
                     <th className="px-4 py-3">Item</th>
                     <th className="px-4 py-3">SKU</th>
@@ -100,19 +100,19 @@ export default function InventoryList({ inventory, items, locations }: Inventory
                     const isLowStock = threshold !== null && qty <= threshold;
 
                     return (
-                      <tr key={row.id} className="text-zinc-300 hover:bg-white/[0.01] transition-colors">
-                        <td className="px-4 py-3 font-medium text-zinc-200">{row.item.name}</td>
-                        <td className="px-4 py-3 font-mono tracking-tight text-xs text-zinc-400">{row.item.sku}</td>
-                        <td className="px-4 py-3 text-zinc-400">{row.location.name}</td>
-                        <td className="px-4 py-3 font-mono tracking-tight font-medium text-zinc-200">{qty}</td>
-                        <td className="px-4 py-3 text-zinc-500">{row.item.unit}</td>
+                      <tr key={row.id} className="text-zinc-300 hover:bg-white/[0.02] transition-colors border-b border-white/5">
+                        <td className="px-4 py-3 text-[12px] font-mono text-zinc-200">{row.item.name}</td>
+                        <td className="px-4 py-3 font-mono tracking-widest text-[10px] text-zinc-500">{row.item.sku}</td>
+                        <td className="px-4 py-3 text-[11px] font-mono text-zinc-400">{row.location.name}</td>
+                        <td className="px-4 py-3 font-mono tracking-widest text-[12px] font-bold text-zinc-200">{qty}</td>
+                        <td className="px-4 py-3 text-[11px] font-mono text-zinc-500">{row.item.unit}</td>
                         <td className="px-4 py-3">
                           {isLowStock ? (
-                            <span className="inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border border-amber-500/20 bg-amber-500/10 text-amber-400">
+                            <span className="inline-flex rounded-none px-2 py-0.5 text-[9px] font-mono uppercase tracking-widest border border-amber-500/30 bg-amber-500/5 text-amber-500">
                               Low Stock
                             </span>
                           ) : (
-                            <span className="inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+                            <span className="inline-flex rounded-none px-2 py-0.5 text-[9px] font-mono uppercase tracking-widest border border-emerald-500/30 bg-emerald-500/5 text-emerald-500">
                               OK
                             </span>
                           )}
@@ -121,7 +121,7 @@ export default function InventoryList({ inventory, items, locations }: Inventory
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleRecordMovement(row.item.id)}
-                              className="rounded-md border border-transparent p-2 text-zinc-500 transition-colors hover:border-white/5 hover:bg-white/5 hover:text-zinc-300"
+                              className="rounded-none border border-transparent p-2 text-zinc-500 transition-colors hover:border-white/10 hover:bg-zinc-900 hover:text-zinc-300"
                               title="Record movement"
                             >
                               <ArrowRightLeft className="h-4 w-4" />

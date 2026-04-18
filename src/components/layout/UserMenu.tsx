@@ -53,12 +53,12 @@ export default function UserMenu({ user }: UserMenuProps) {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-md bg-zinc-900/95 backdrop-blur-3xl border border-white/10 shadow-lg ring-1 ring-black/5 z-50 animate-in fade-in zoom-in-95 duration-100">
-          <div className="px-4 py-3 border-b border-white/5">
-            <p className="text-sm font-medium text-white truncate">
+        <div className="absolute right-0 mt-2 w-56 rounded-none bg-zinc-950 border border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.05)] z-50 animate-in fade-in slide-in-from-top-2 duration-100">
+          <div className="px-4 py-3 border-b border-white/10">
+            <p className="text-[11px] font-mono tracking-wider font-bold text-white uppercase truncate">
               {user.name || "User"}
             </p>
-            <p className="text-xs text-zinc-500 truncate mt-0.5">
+            <p className="text-[10px] font-mono tracking-wide text-zinc-500 truncate mt-1">
               {user.email}
             </p>
           </div>
@@ -67,19 +67,19 @@ export default function UserMenu({ user }: UserMenuProps) {
             <Link
               href="/account/settings"
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors"
+              className="block px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-zinc-400 hover:bg-indigo-500/10 hover:text-indigo-300 border-l-2 border-transparent hover:border-indigo-500 transition-all"
             >
               Account Settings
             </Link>
           </div>
           
-          <div className="py-1 border-t border-white/5">
+          <div className="py-1 border-t border-white/10">
             <button
               onClick={() => {
                 setIsOpen(false);
                 signOut({ callbackUrl: "/auth/signin" });
               }}
-              className="block w-full text-left px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 transition-colors"
+              className="block w-full text-left px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 border-l-2 border-transparent hover:border-rose-500 transition-all"
             >
               Sign Out
             </button>

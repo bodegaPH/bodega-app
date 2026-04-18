@@ -67,11 +67,11 @@ export default async function OrganizationSettingsPage({
     <div className="min-h-screen bg-zinc-950 p-8">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-white">
-            Organization Settings
+        <div className="border-b border-white/10 pb-6">
+          <h1 className="text-2xl font-mono uppercase tracking-[0.2em] font-bold text-white">
+            Organization_Settings
           </h1>
-          <p className="text-sm text-zinc-400 mt-2">
+          <p className="text-[10px] font-mono tracking-widest uppercase text-zinc-500 mt-2">
             Manage organization details and members
           </p>
         </div>

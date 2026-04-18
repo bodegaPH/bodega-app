@@ -358,13 +358,26 @@ export default function OrganizationSettingsForm({
 
   return (
     <div className="space-y-8">
+      {/* Global status message — shown across all sections */}
+      {message && (
+        <div
+          className={`px-4 py-3 text-[10px] font-mono uppercase tracking-widest border ${
+            message.type === "success"
+              ? "bg-emerald-950/30 text-emerald-400 border-emerald-500/30"
+              : "bg-rose-950/30 text-rose-400 border-rose-500/30"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
       {/* Organization Details Section */}
-      <div className="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
-        <h2 className="text-lg font-semibold text-white mb-6">Organization Details</h2>
+      <div className="bg-black border border-white/10 rounded-none p-8">
+        <h2 className="text-sm font-mono tracking-[0.2em] uppercase font-semibold text-white mb-6">Organization Details</h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Organization Name Field */}
           <div>
-            <label htmlFor="orgName" className="block text-sm font-medium text-zinc-300 mb-2">
+            <label htmlFor="orgName" className="block text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2">
               Organization Name
             </label>
             <input
@@ -373,22 +386,9 @@ export default function OrganizationSettingsForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-inner"
+              className="w-full px-4 py-3 bg-zinc-950 border border-white/10 rounded-none text-[12px] font-mono text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-none"
             />
           </div>
-
-          {/* Message */}
-          {message && (
-            <div
-              className={`px-4 py-3 rounded-xl text-sm ${
-                message.type === "success"
-                  ? "bg-emerald-500/10 text-emerald-200 border border-emerald-500/20"
-                  : "bg-rose-500/10 text-rose-200 border border-rose-500/20"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           {/* Submit Button */}
           <div className="flex justify-end pt-2">
@@ -404,9 +404,9 @@ export default function OrganizationSettingsForm({
 
       {/* Danger Zone - Delete Organization */}
       {!isLastOrg && (
-        <div className="bg-rose-950/20 backdrop-blur-3xl border border-rose-500/20 rounded-2xl p-6 shadow-[inset_0_1px_0_0_rgba(244,63,94,0.05)]">
-          <h2 className="text-lg font-semibold text-rose-400 mb-2">Danger Zone</h2>
-          <p className="text-sm text-rose-200/70 mb-6">
+        <div className="bg-rose-950/10 border border-rose-500/30 rounded-none p-8">
+          <h2 className="text-sm font-mono tracking-[0.2em] uppercase font-semibold text-rose-500 mb-2">Danger Zone</h2>
+          <p className="text-[10px] font-mono tracking-widest uppercase text-rose-500/70 mb-6">
             Permanently delete this organization. This action cannot be undone and will erase all data, stock, and locations associated with it.
           </p>
           <Button
@@ -420,26 +420,32 @@ export default function OrganizationSettingsForm({
         </div>
       )}
 
-      <div className="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] space-y-4">
-        <h2 className="text-lg font-semibold text-white">Ownership</h2>
-        <p className="text-sm text-zinc-400">
-          Current owner: <span className="text-zinc-200">{owner.name ?? owner.email ?? "Unknown"}</span>
+      <div className="bg-black border border-white/10 rounded-none p-8 space-y-6">
+        <h2 className="text-sm font-mono tracking-[0.2em] uppercase font-semibold text-white">Ownership</h2>
+        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+          Current owner: <span className="text-zinc-300 font-bold">{owner.name ?? owner.email ?? "Unknown"}</span>
         </p>
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-zinc-300">Transfer ownership</label>
-          <select
-            value={targetOwnerId}
-            onChange={(e) => setTargetOwnerId(e.target.value)}
-            disabled={!isOwner || isTransferring}
-            className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-inner disabled:opacity-60"
-          >
-            <option value="">Select member</option>
-            {transferCandidates.map((member) => (
-              <option key={member.id} value={member.id}>
-                {(member.name ?? member.email ?? "Unknown user") + (member.role === "ORG_ADMIN" ? " (Admin)" : "")}
-              </option>
-            ))}
-          </select>
+          <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2">Transfer ownership</label>
+          <div className="relative">
+            <select
+              value={targetOwnerId}
+              onChange={(e) => setTargetOwnerId(e.target.value)}
+              disabled={!isOwner || isTransferring}
+              style={{ colorScheme: "dark" }}
+              className="appearance-none w-full pl-4 pr-10 py-3 bg-zinc-950 border border-white/10 text-[10px] uppercase font-mono text-zinc-300 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 disabled:opacity-50 cursor-pointer"
+            >
+              <option value="">Select member</option>
+              {transferCandidates.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {(member.name ?? member.email ?? "Unknown user") + (member.role === "ORG_ADMIN" ? " (Admin)" : "")}
+                </option>
+              ))}
+            </select>
+            <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none w-3 h-3 text-zinc-500" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M2 4l4 4 4-4" strokeLinecap="square"/>
+            </svg>
+          </div>
           <div className="flex justify-end">
             <Button
               type="button"
@@ -453,29 +459,35 @@ export default function OrganizationSettingsForm({
         </div>
       </div>
 
-      <div className="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-white">Invite members</h2>
+      <div className="bg-black border border-white/10 rounded-none p-8 space-y-6">
+        <h2 className="text-sm font-mono tracking-[0.2em] uppercase font-semibold text-white">Invite members</h2>
         <form onSubmit={handleCreateInvite} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
           <div className="md:col-span-2">
-            <label className="block text-sm text-zinc-400 mb-2">Email</label>
+            <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2">Email</label>
             <input
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white"
+              className="w-full px-4 py-3 bg-zinc-950 border border-white/10 rounded-none text-[12px] font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
             />
           </div>
           <div>
-            <label className="block text-sm text-zinc-400 mb-2">Role</label>
-            <select
-              value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value as "ORG_ADMIN" | "ORG_USER")}
-              className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white"
-            >
-              <option value="ORG_USER">Member</option>
-              <option value="ORG_ADMIN">Admin</option>
-            </select>
+            <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2">Role</label>
+            <div className="relative">
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value as "ORG_ADMIN" | "ORG_USER")}
+                style={{ colorScheme: "dark" }}
+                className="appearance-none w-full pl-4 pr-10 py-3 bg-zinc-950 border border-white/10 text-[10px] font-mono uppercase tracking-widest text-zinc-300 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 cursor-pointer"
+              >
+                <option value="ORG_USER">Member</option>
+                <option value="ORG_ADMIN">Admin</option>
+              </select>
+              <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none w-3 h-3 text-zinc-500" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M2 4l4 4 4-4" strokeLinecap="square"/>
+              </svg>
+            </div>
           </div>
           <Button type="submit" loading={isLoading}>Send Invite</Button>
         </form>
@@ -484,16 +496,16 @@ export default function OrganizationSettingsForm({
         )}
 
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-zinc-300">Pending invites</h3>
+          <h3 className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mt-6">Pending invites</h3>
           {invites.length === 0 ? (
-            <p className="text-sm text-zinc-500">No pending invites.</p>
+            <p className="text-[10px] font-mono uppercase text-zinc-600">No pending invites.</p>
           ) : (
             <div className="space-y-2">
               {invites.map((invite) => (
-                <div key={invite.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-3 rounded-xl border border-white/10 bg-black/20">
+                <div key={invite.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 rounded-none border border-white/10 bg-zinc-950">
                   <div>
-                    <p className="text-sm text-zinc-200">{invite.invitedEmail}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-[12px] font-mono text-zinc-200">{invite.invitedEmail}</p>
+                    <p className="text-[9px] font-mono tracking-widest uppercase text-zinc-500 mt-1">
                       {invite.role === "ORG_ADMIN" ? "Admin" : "Member"} · expires {new Date(invite.expiresAt).toLocaleTimeString()}
                     </p>
                   </div>
@@ -526,10 +538,10 @@ export default function OrganizationSettingsForm({
         </div>
       </div>
 
-      <div className="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-6">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-white">Members</h2>
-          <p className="text-sm text-zinc-400">People with access to this organization</p>
+      <div className="bg-black border border-white/10 rounded-none p-8">
+        <div className="mb-6">
+          <h2 className="text-sm font-mono tracking-[0.2em] uppercase font-semibold text-white">Members</h2>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-1">People with access to this organization</p>
         </div>
         <MemberList
           members={members}
@@ -542,11 +554,11 @@ export default function OrganizationSettingsForm({
 
       {/* Info message for last org */}
       {isLastOrg && (
-        <div className="bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-2xl p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
-          <h2 className="text-lg font-semibold text-white mb-2">Danger Zone</h2>
-          <div className="bg-black/20 border border-white/10 rounded-xl p-4 mt-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">
-              <span className="font-semibold text-zinc-300">Cannot delete this organization.</span> You must have at least one organization in your account. To delete this one, you first need to create another organization and switch to it.
+        <div className="bg-rose-950/10 border border-rose-500/30 rounded-none p-8">
+          <h2 className="text-sm font-mono tracking-[0.2em] uppercase font-semibold text-rose-500 mb-2">Danger Zone</h2>
+          <div className="bg-black border border-rose-500/20 rounded-none p-4 mt-4">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-rose-300 leading-relaxed">
+              <span className="font-bold text-rose-500">Cannot delete this organization.</span> You must have at least one organization in your account. To delete this one, you first need to create another organization and switch to it.
             </p>
           </div>
         </div>
@@ -555,34 +567,34 @@ export default function OrganizationSettingsForm({
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 max-w-md w-full shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-4">Delete Organization</h3>
+          <div className="bg-zinc-950 border border-rose-500/30 rounded-none p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-lg font-mono uppercase tracking-[0.2em] font-bold text-rose-500 mb-4">Delete Organization</h3>
             
             {/* Show data warning if details are present */}
             {deleteDetails ? (
               <>
-                <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 mb-5">
-                  <p className="text-sm text-rose-200 font-semibold mb-3">
+                <div className="bg-black border border-rose-500/30 rounded-none p-4 mb-5">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-rose-200 font-bold mb-3">
                     This organization contains:
                   </p>
-                  <ul className="text-sm text-rose-300 space-y-2">
+                  <ul className="text-[10px] font-mono uppercase tracking-widest text-rose-400 space-y-2">
                     {deleteDetails.items > 0 && <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div> {deleteDetails.items} item{deleteDetails.items !== 1 ? 's' : ''}</li>}
                     {deleteDetails.locations > 0 && <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div> {deleteDetails.locations} location{deleteDetails.locations !== 1 ? 's' : ''}</li>}
                     {deleteDetails.movements > 0 && <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div> {deleteDetails.movements} movement{deleteDetails.movements !== 1 ? 's' : ''}</li>}
                     {deleteDetails.stock && deleteDetails.stock > 0 && <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div> {deleteDetails.stock} stock record{deleteDetails.stock !== 1 ? 's' : ''}</li>}
                   </ul>
-                  <p className="text-sm text-rose-200 mt-4 font-medium">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-rose-500 mt-6 font-bold">
                     All of this data will be permanently deleted.
                   </p>
                 </div>
               </>
             ) : (
-              <p className="text-sm text-zinc-300 mb-5 leading-relaxed">
-                This will permanently delete the organization <span className="font-semibold text-white px-1 py-0.5 bg-white/10 rounded">{organization.name}</span> and all associated data.
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-5 leading-relaxed">
+                This will permanently delete the organization <span className="font-bold text-rose-400 px-1 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded-none">{organization.name}</span> and all associated data.
               </p>
             )}
             
-            <p className="text-sm text-zinc-400 mb-2">
+            <p className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2">
               To confirm, type the organization name below:
             </p>
             <input
@@ -590,17 +602,17 @@ export default function OrganizationSettingsForm({
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder={organization.name}
-              className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 mb-6 transition-all shadow-inner"
+              className="w-full px-4 py-3 bg-black border border-white/10 rounded-none text-[12px] font-mono text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50 mb-6 transition-none"
             />
-            <p className="text-sm text-zinc-400 mb-2">
-              Owner confirmation: type <span className="font-semibold text-white">DELETE</span>
+            <p className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2">
+              Owner confirmation: type <span className="font-bold text-rose-500">DELETE</span>
             </p>
             <input
               type="text"
               value={ownerConfirmText}
               onChange={(e) => setOwnerConfirmText(e.target.value)}
               placeholder="DELETE"
-              className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 mb-6 transition-all shadow-inner"
+              className="w-full px-4 py-3 bg-black border border-white/10 rounded-none text-[12px] font-mono text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50 mb-6 transition-none"
             />
             <div className="flex gap-3 justify-end">
               <Button

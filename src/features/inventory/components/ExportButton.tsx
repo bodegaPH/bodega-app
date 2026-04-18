@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download } from "lucide-react";
+import { DownloadIcon as Download } from "@radix-ui/react-icons";
 import Button from "@/components/ui/Button";
 import { exportInventoryCsv } from "@/features/inventory/actions/export-inventory";
 import { useOrg } from "@/features/shared/OrgContext";
@@ -45,9 +45,9 @@ export function ExportButton() {
       variant="ghost"
       onClick={handleExport}
       disabled={isExporting}
-      className="flex items-center gap-2"
+      className="gap-2 uppercase text-[10px]"
     >
-      <Download className="h-4 w-4" />
+      <Download className="h-3.5 w-3.5" />
       {isExporting ? "Exporting..." : "Export CSV"}
     </Button>
   );

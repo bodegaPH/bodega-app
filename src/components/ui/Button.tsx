@@ -16,21 +16,21 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center font-semibold rounded-xl transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center font-mono uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-none";
 
   const variants = {
     primary:
-      "bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]",
+      "bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/20 shadow-[0_0_15px_rgba(99,102,241,0.2)] disabled:shadow-none disabled:border-transparent",
     ghost:
-      "bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-200 hover:text-white",
+      "bg-transparent hover:bg-white/5 border border-white/10 text-zinc-400 hover:text-white",
     danger:
-      "bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-300 hover:text-rose-200",
+      "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 hover:text-rose-300 shadow-[inset_0_0_8px_rgba(244,63,94,0.1)]",
   };
 
   const sizes = {
-    sm: "px-3 py-1.5 text-xs",
-    md: "px-4 py-2.5 text-sm",
-    lg: "px-6 py-3 text-base",
+    sm: "px-3 py-2 text-[9px]",
+    md: "px-5 py-2.5 text-[10px]",
+    lg: "px-8 py-3 text-[11px]",
   };
 
   return (

@@ -38,6 +38,7 @@ export type DashboardData = {
   stats: DashboardStats;
   recentActivity: RecentMovement[];
   lowStock: LowStockItem[];
+  volumeData: { date: string; volume: number }[];
 };
 
 export async function getDashboardData(orgId: string): Promise<DashboardData> {
@@ -48,6 +49,7 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
     totalLocations,
     recentActivity,
     lowStock,
+    chartMovements,
   ] = (await Promise.all([
     getOrganizationName(orgId),
     getItemCount(orgId),
@@ -55,6 +57,7 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
     getLocationCount(orgId),
     getMovements(orgId, { page: 1, limit: 5 }),
     getLowStockItems(orgId),
+    getMovements(orgId, { page: 1, limit: 100 }),
   ])) as [
     string | null,
     number,
@@ -62,6 +65,7 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
     number,
     Awaited<ReturnType<typeof getMovements>>,
     Awaited<ReturnType<typeof getLowStockItems>>,
+    Awaited<ReturnType<typeof getMovements>>,
   ];
 
   return {
@@ -84,6 +88,18 @@ export async function getDashboardData(orgId: string): Promise<DashboardData> {
       },
       location: { name: stock.location.name },
     })),
+    volumeData: (() => {
+      const grouped = chartMovements.movements.reduce((acc, m) => {
+        const date = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(m.createdAt));
+        acc[date] = (acc[date] || 0) + Math.abs(parseFloat(m.quantity) || 0);
+        return acc;
+      }, {} as Record<string, number>);
+      return chartMovements.movements
+        .map(m => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(m.createdAt)))
+        .filter((value, index, self) => self.indexOf(value) === index)
+        .reverse()
+        .map(date => ({ date, volume: grouped[date] }));
+    })(),
   };
 }
 

@@ -38,10 +38,7 @@ export default function MovementForm({
     // Pre-select default location
     const defaultLocation = locations.find((loc) => loc.isDefault);
     setLocationId(defaultLocation?.id ?? locations[0]?.id ?? "");
-
-    // Pre-select item if provided
     setItemId(preselectedItemId ?? "");
-
     setType("RECEIVE");
     setQuantity("");
     setReason("");
@@ -84,12 +81,7 @@ export default function MovementForm({
     }
 
     if (type === "ADJUSTMENT" && !reason.trim()) {
-      setError("Reason is required for adjustments");
-      return;
-    }
-
-    if (type !== "ADJUSTMENT" && reason.trim()) {
-      setError("Reason is only allowed for adjustments");
+      setError("REASON IS REQUIRED FOR ADJUSTMENTS");
       return;
     }
 
@@ -161,14 +153,14 @@ export default function MovementForm({
         onClick={onClose}
         aria-label="Close"
       />
-      <div className="relative z-10 w-full max-w-lg rounded-2xl bg-zinc-900/40 backdrop-blur-3xl border border-white/5 ring-1 ring-white/10 p-6 shadow-2xl">
-        <h2 className="text-lg font-semibold text-white">Record Movement</h2>
-        <p className="mt-1 text-sm text-zinc-400">
+      <div className="relative z-10 w-full max-w-lg rounded-none bg-zinc-950 border border-white/10 p-8 shadow-2xl">
+        <h2 className="text-lg font-mono font-bold uppercase tracking-[0.2em] text-white">Record Movement</h2>
+        <p className="mt-1 text-[10px] uppercase font-mono tracking-widest text-zinc-500">
           Record a stock movement (receive, issue, or adjustment).
         </p>
 
         {error && (
-          <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+          <div className="mt-6 rounded-none border-l-[2px] border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-[10px] font-mono text-rose-400 tracking-wide">
             {error}
           </div>
         )}
@@ -177,7 +169,7 @@ export default function MovementForm({
           <div>
             <label
               htmlFor="movement-item"
-              className="text-sm font-medium text-zinc-300"
+              className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-2"
             >
               Item
             </label>
@@ -185,7 +177,7 @@ export default function MovementForm({
               id="movement-item"
               value={itemId}
               onChange={(event) => setItemId(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 [&>option]:bg-zinc-900 [&>option]:text-white"
+              className="w-full rounded-none border border-white/10 bg-black px-3 py-2.5 text-[10px] uppercase font-mono tracking-widest text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 [&>option]:bg-zinc-950 [&>option]:text-white"
             >
               <option value="">Select an item</option>
               {items.map((item) => (
@@ -199,7 +191,7 @@ export default function MovementForm({
           <div>
             <label
               htmlFor="movement-location"
-              className="text-sm font-medium text-zinc-300"
+              className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-2"
             >
               Location
             </label>
@@ -207,7 +199,7 @@ export default function MovementForm({
               id="movement-location"
               value={locationId}
               onChange={(event) => setLocationId(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 [&>option]:bg-zinc-900 [&>option]:text-white"
+              className="w-full rounded-none border border-white/10 bg-black px-3 py-2.5 text-[10px] uppercase font-mono tracking-widest text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 [&>option]:bg-zinc-950 [&>option]:text-white"
             >
               <option value="">Select a location</option>
               {locations.map((loc) => (
@@ -221,7 +213,7 @@ export default function MovementForm({
           <div>
             <label
               htmlFor="movement-type"
-              className="text-sm font-medium text-zinc-300"
+              className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-2"
             >
               Movement Type
             </label>
@@ -229,7 +221,7 @@ export default function MovementForm({
               id="movement-type"
               value={type}
               onChange={(event) => setType(event.target.value as MovementType)}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 [&>option]:bg-zinc-900 [&>option]:text-white"
+              className="w-full rounded-none border border-white/10 bg-black px-3 py-2.5 text-[10px] uppercase font-mono tracking-widest text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 [&>option]:bg-zinc-950 [&>option]:text-white"
             >
               <option value="RECEIVE">Receive (add stock)</option>
               <option value="ISSUE">Issue (remove stock)</option>
@@ -240,11 +232,11 @@ export default function MovementForm({
           <div>
             <label
               htmlFor="movement-quantity"
-              className="text-sm font-medium text-zinc-300"
+              className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-2"
             >
               Quantity {selectedItem && `(${selectedItem.unit})`}
               {type === "ADJUSTMENT" && (
-                <span className="ml-1 text-xs text-zinc-500">
+                <span className="ml-1 text-[8px] opacity-70 italic tracking-wider">
                   (negative to reduce stock)
                 </span>
               )}
@@ -256,8 +248,8 @@ export default function MovementForm({
               step="0.01"
               value={quantity}
               onChange={(event) => setQuantity(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-              placeholder={type === "ADJUSTMENT" ? "e.g. -5 or 10" : "10"}
+              className="w-full rounded-none border border-white/10 bg-black px-3 py-2.5 text-[10px] font-mono uppercase tracking-widest text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+              placeholder={type === "ADJUSTMENT" ? "-0.00" : "0.00"}
             />
           </div>
 
@@ -265,7 +257,7 @@ export default function MovementForm({
             <div>
               <label
                 htmlFor="movement-reason"
-                className="text-sm font-medium text-zinc-300"
+                className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-2"
               >
                 Reason
               </label>
@@ -273,8 +265,8 @@ export default function MovementForm({
                 id="movement-reason"
                 value={reason}
                 onChange={(event) => setReason(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                placeholder="Stock count correction"
+                className="w-full rounded-none border border-white/10 bg-black px-3 py-2.5 text-[10px] font-mono uppercase tracking-widest text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+                placeholder="STOCK COUNT CORRECTION"
               />
             </div>
           )}

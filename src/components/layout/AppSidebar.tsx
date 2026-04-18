@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Package,
-  ArrowLeftRight,
-  MapPin,
-  Boxes,
-  ChevronDown,
-  Building2,
-  Check,
-  Plus,
-} from "lucide-react";
+  DashboardIcon as LayoutDashboard,
+  CubeIcon as Boxes,
+  TokensIcon as Package,
+  UpdateIcon as ArrowLeftRight,
+  TargetIcon as MapPin,
+  CaretSortIcon as ChevronsUpDown,
+  MixerHorizontalIcon as Settings2,
+  BoxModelIcon as Building2,
+  CheckIcon as Check,
+  PlusIcon as Plus,
+} from "@radix-ui/react-icons";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { switchOrg, createOrg } from "@/features/organizations/actions/org";
@@ -47,7 +49,7 @@ const navGroups = [
   {
     header: "SYSTEM",
     items: [
-      { label: "Settings", href: "/settings/organization", icon: Building2 },
+      { label: "Settings", href: "/settings/organization", icon: Settings2 },
     ],
   },
 ];
@@ -138,52 +140,53 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
   }
 
   return (
-    <aside className="w-64 shrink-0 h-screen sticky top-0 flex flex-col bg-zinc-950 border-r border-white/5 relative z-50">
-      {/* Top Section / Org Switcher */}
+    <aside className="w-64 shrink-0 h-screen sticky top-0 flex flex-col bg-zinc-950 border-r border-white/10 relative z-50">
+      {/* Top Section / Org Switcher (Render Style) */}
       <div
-        className="h-16 shrink-0 flex items-center px-4 border-b border-white/5 relative"
+        className="h-16 shrink-0 flex items-stretch border-b border-white/10 relative"
         ref={dropdownRef}
       >
+        {/* Logo Pane */}
+        <div className="w-16 h-full shrink-0 flex items-center justify-center border-r border-white/10">
+          <Image 
+            src="/bodega-logo.svg" 
+            alt="Bodega" 
+            width={24} 
+            height={24} 
+            className="w-6 h-6"
+            priority
+          />
+        </div>
+
+        {/* Org Switcher Button */}
         <button
           onClick={() => setIsOrgSwitcherOpen(!isOrgSwitcherOpen)}
           disabled={isSwitching}
-          className="flex-1 flex items-center gap-3 w-full rounded-md p-1.5 -ml-1.5 hover:bg-white/5 transition-colors group text-left"
+          className="flex-1 flex items-center justify-between px-4 hover:bg-white/5 transition-colors group text-left min-w-0"
         >
-          {/* Logo Icon */}
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-md bg-zinc-900 border border-white/10 shrink-0">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              className="w-4 h-4 text-white"
-            >
-              <path
-                d="M5 4h9l6 4.5-4 3.5 4 3.5-6 4.5H5z"
-                strokeWidth="3.5"
-                strokeLinejoin="miter"
-                strokeLinecap="square"
-                className="text-white"
-              />
-            </svg>
-          </div>
-          <div className="flex-1 min-w-0 flex items-center justify-between">
-            <div className="min-w-0">
-              <p className="text-[13px] font-medium text-white truncate leading-tight">
-                {activeOrg.name}
-              </p>
-              <p className="text-[11px] text-zinc-500 font-medium">Bodega</p>
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Avatar Square */}
+            <div className="w-6 h-6 rounded-none bg-indigo-500/20 border border-indigo-500/50 flex items-center justify-center shrink-0 shadow-[inset_0_0_8px_rgba(99,102,241,0.2)]">
+              <span className="text-[12px] font-mono font-bold text-indigo-400">
+                {activeOrg.name.charAt(0).toUpperCase()}
+              </span>
             </div>
-            <ChevronDown className="w-4 h-4 text-zinc-500 shrink-0" />
+            <span className="text-[12px] font-mono font-bold tracking-[0.1em] text-zinc-300 uppercase truncate pt-[1px]">
+              {activeOrg.name}
+            </span>
           </div>
+          <ChevronsUpDown 
+            className="w-4 h-4 text-zinc-500 shrink-0 ml-2" 
+          />
         </button>
 
         {/* Org Switcher Dropdown */}
         {isOrgSwitcherOpen && (
-          <div className="absolute top-full left-4 right-4 mt-2 rounded-lg bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden z-50 py-1">
+          <div className="absolute top-full left-4 right-4 mt-2 rounded-none bg-zinc-950 border border-white/10 shadow-2xl overflow-hidden z-50 py-1">
             {userOrgs.length > 1 && (
               <>
-                <div className="px-3 py-2 border-b border-white/5">
-                  <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                <div className="px-3 py-2 border-b border-white/10">
+                  <p className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-[0.2em]">
                     Switch Organization
                   </p>
                 </div>
@@ -193,20 +196,24 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
                       key={org.id}
                       onClick={() => handleSwitch(org.id)}
                       disabled={isSwitching}
-                      className={`w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-md text-left transition-colors ${
+                      className={`w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-none text-left transition-all border-l-2 ${
                         org.id === activeOrg.id
-                          ? "bg-white/10 text-white"
-                          : "hover:bg-white/5 text-zinc-300"
+                          ? "bg-indigo-500/10 border-indigo-500 text-indigo-100"
+                          : "border-transparent hover:bg-white/5 text-zinc-400"
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 className="w-4 h-4 shrink-0 opacity-50" />
-                        <span className="text-[13px] font-medium truncate">
+                        <Building2 
+                          className="w-4 h-4 shrink-0 opacity-50" 
+                        />
+                        <span className="text-[12px] font-mono uppercase tracking-wider truncate">
                           {org.name}
                         </span>
                       </div>
                       {org.id === activeOrg.id && (
-                        <Check className="w-3.5 h-3.5 shrink-0 text-white" />
+                        <Check 
+                          className="w-3.5 h-3.5 shrink-0 text-indigo-400" 
+                        />
                       )}
                     </button>
                   ))}
@@ -215,17 +222,19 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
             )}
             {/* Create Organization Button */}
             <div
-              className={`p-1 ${userOrgs.length > 1 ? "border-t border-white/5 mt-1" : ""}`}
+              className={`p-1 ${userOrgs.length > 1 ? "border-t border-white/10 mt-1" : ""}`}
             >
               <button
                 onClick={() => {
                   setShowCreateModal(true);
                   setIsOrgSwitcherOpen(false);
                 }}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left hover:bg-white/5 text-zinc-300 transition-colors"
+                className="w-full flex items-center gap-2 px-2 py-2 rounded-none text-left hover:bg-zinc-800 text-zinc-300 transition-colors border border-dashed border-white/10 hover:border-indigo-500/50 group"
               >
-                <Plus className="w-4 h-4 shrink-0" />
-                <span className="text-[13px] font-medium">
+                <Plus 
+                  className="w-3.5 h-3.5 shrink-0 text-zinc-500 group-hover:text-indigo-400"
+                />
+                <span className="text-[10px] font-mono uppercase tracking-[0.1em] group-hover:text-white">
                   Create Organization
                 </span>
               </button>
@@ -236,18 +245,18 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
 
       {/* Create Organization Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100]">
-          <div className="bg-zinc-900 border border-white/10 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-4">
+        <div className="fixed inset-0 bg-zinc-950/90 flex items-center justify-center z-[100]">
+          <div className="bg-zinc-950 border border-indigo-500/30 rounded-none p-8 max-w-md w-full mx-4 shadow-[0_0_50px_rgba(99,102,241,0.05)]">
+            <h3 className="text-[11px] font-mono tracking-[0.2em] font-bold text-indigo-400 uppercase mb-6">
               Create Organization
             </h3>
-            <form onSubmit={handleCreateOrg} className="space-y-4">
+            <form onSubmit={handleCreateOrg} className="space-y-6">
               <div>
                 <label
                   htmlFor="orgName"
-                  className="block text-sm font-medium text-zinc-300 mb-2"
+                  className="block text-[10px] font-mono tracking-widest text-zinc-500 uppercase mb-2"
                 >
-                  Organization Name
+                  <span className="text-indigo-500 mr-1">*</span> Organization Name
                 </label>
                 <input
                   type="text"
@@ -258,17 +267,17 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
                   required
                   minLength={2}
                   maxLength={100}
-                  className="w-full px-3 py-2 bg-zinc-800 border border-white/10 rounded-md text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  className="w-full px-3 py-3 bg-black/50 border border-white/10 rounded-none text-[13px] font-mono text-white placeholder-zinc-700 outline-none focus:border-indigo-500 transition-colors"
                 />
               </div>
 
               {createError && (
-                <div className="px-4 py-3 rounded-md text-sm bg-rose-500/10 text-rose-200 border border-rose-500/20">
+                <div className="px-4 py-3 rounded-none text-[11px] font-mono uppercase tracking-wide bg-rose-500/10 text-rose-400 border border-rose-500/30">
                   {createError}
                 </div>
               )}
 
-              <div className="flex gap-3 justify-end">
+              <div className="flex gap-3 justify-end pt-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -277,14 +286,14 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
                     setCreateError(null);
                   }}
                   disabled={isCreating}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium rounded-md transition-colors"
+                  className="px-5 py-2.5 bg-transparent border border-white/10 hover:bg-white/5 text-zinc-400 text-[10px] font-mono tracking-[0.2em] uppercase rounded-none transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isCreating || !newOrgName.trim()}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white text-sm font-medium rounded-md transition-colors shadow-[0_0_20px_rgba(37,99,235,0.3)] disabled:shadow-none disabled:cursor-not-allowed"
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/30 text-white text-[10px] font-mono tracking-[0.2em] uppercase rounded-none transition-colors shadow-[0_0_15px_rgba(99,102,241,0.2)] disabled:shadow-none disabled:cursor-not-allowed border border-indigo-400/20 disabled:border-transparent"
                 >
                   {isCreating ? "Creating..." : "Create"}
                 </button>
@@ -295,10 +304,10 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+      <nav className="flex-1 py-6 space-y-5 overflow-y-auto w-full">
         {navGroups.map((group) => (
           <div key={group.header} className="space-y-1">
-            <h3 className="px-2 text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-2">
+            <h3 className="px-6 text-[10px] font-mono font-bold text-zinc-600 uppercase tracking-[0.2em] mb-2">
               {group.header}
             </h3>
             {group.items.map(({ label, href, icon: Icon }) => {
@@ -315,16 +324,18 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
                 <Link
                   key={href}
                   href={orgHref}
-                  className={`flex items-center gap-3 px-2 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
+                  className={`flex items-center gap-3 pl-[21px] pr-6 py-2.5 rounded-none text-[12px] font-mono uppercase tracking-wide transition-all group ${
                     isActive
-                      ? "bg-zinc-800/80 text-white"
-                      : "text-zinc-400 hover:text-white hover:bg-white/5"
+                      ? "border-l-[3px] border-indigo-500 bg-indigo-500/10 text-white"
+                      : "border-l-[3px] border-transparent text-zinc-500 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   <Icon
-                    className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-zinc-500"}`}
+                    className={`w-4 h-4 shrink-0 transition-colors ${isActive ? "text-indigo-400" : "text-zinc-600 group-hover:text-zinc-400"}`}
                   />
-                  {label}
+                  <span className={isActive ? "font-bold tracking-tight" : ""}>
+                    {label}
+                  </span>
                 </Link>
               );
             })}

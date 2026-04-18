@@ -2,6 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
+import Button from "@/components/ui/Button";
 
 interface MovementFiltersProps {
   items: Array<{ id: string; name: string; sku: string }>;
@@ -153,17 +154,17 @@ export default function MovementFilters({ items, locations }: MovementFiltersPro
   }
 
   return (
-    <div className="rounded-lg bg-zinc-900/30 backdrop-blur-xl border border-white/5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] p-4 space-y-4">
+    <div className="bg-zinc-950 border border-white/10 p-6 space-y-6">
       <form onSubmit={handleApplyFilters} className="flex flex-col sm:flex-row items-end gap-4">
         <div className="flex-1 w-full sm:w-auto min-w-[200px]">
-          <label htmlFor="filter-item" className="text-xs font-medium text-zinc-400 uppercase tracking-wider block mb-2">
+          <label htmlFor="filter-item" className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-2">
             Item
           </label>
           <select
             id="filter-item"
             value={itemId}
             onChange={(event) => setItemId(event.target.value)}
-            className="w-full rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 [&>option]:bg-zinc-900 [&>option]:text-white"
+            className="w-full rounded-none border border-white/10 bg-black px-3 py-2 text-[10px] uppercase font-mono tracking-widest text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 [&>option]:bg-zinc-950 [&>option]:text-white"
           >
             <option value="">All items</option>
             {items.map((item) => (
@@ -175,14 +176,14 @@ export default function MovementFilters({ items, locations }: MovementFiltersPro
         </div>
 
         <div className="flex-1 w-full sm:w-auto min-w-[200px]">
-          <label htmlFor="filter-location" className="text-xs font-medium text-zinc-400 uppercase tracking-wider block mb-2">
+          <label htmlFor="filter-location" className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-2">
             Location
           </label>
           <select
             id="filter-location"
             value={locationId}
             onChange={(event) => setLocationId(event.target.value)}
-            className="w-full rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 [&>option]:bg-zinc-900 [&>option]:text-white"
+            className="w-full rounded-none border border-white/10 bg-black px-3 py-2 text-[10px] uppercase font-mono tracking-widest text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 [&>option]:bg-zinc-950 [&>option]:text-white"
           >
             <option value="">All locations</option>
             {locations.map((location) => (
@@ -195,7 +196,7 @@ export default function MovementFilters({ items, locations }: MovementFiltersPro
 
         <div className="flex-[2] w-full sm:w-auto grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="filter-from" className="text-xs font-medium text-zinc-400 uppercase tracking-wider block mb-2">
+            <label htmlFor="filter-from" className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-2">
               From Date
             </label>
             <input
@@ -203,12 +204,12 @@ export default function MovementFilters({ items, locations }: MovementFiltersPro
               type="date"
               value={from}
               onChange={(event) => setFrom(event.target.value)}
-              className="w-full rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 [color-scheme:dark]"
+              className="w-full rounded-none border border-white/10 bg-black px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 [color-scheme:dark]"
             />
           </div>
 
           <div>
-            <label htmlFor="filter-to" className="text-xs font-medium text-zinc-400 uppercase tracking-wider block mb-2">
+            <label htmlFor="filter-to" className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-2">
               To Date
             </label>
             <input
@@ -216,56 +217,56 @@ export default function MovementFilters({ items, locations }: MovementFiltersPro
               type="date"
               value={to}
               onChange={(event) => setTo(event.target.value)}
-              className="w-full rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 [color-scheme:dark]"
+              className="w-full rounded-none border border-white/10 bg-black px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 [color-scheme:dark]"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button
+          <Button
             type="submit"
-            className="flex-1 sm:flex-none px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-sm font-medium text-white transition-colors border border-transparent whitespace-nowrap"
+            className="w-full sm:w-auto"
           >
             Apply Filters
-          </button>
+          </Button>
           {hasFilters && (
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={handleClearFilters}
-              className="px-4 py-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium text-zinc-300 hover:text-white transition-colors whitespace-nowrap"
+              className="w-full sm:w-auto"
             >
               Clear
-            </button>
+            </Button>
           )}
         </div>
       </form>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
             onClick={handleFilteredExport}
             disabled={isExporting}
-            className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-sm font-medium text-white transition-colors border border-transparent disabled:opacity-50"
           >
             {isExporting ? "Exporting..." : "Export CSV"}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             type="button"
             onClick={handleBroadExport}
             disabled={isExporting}
-            className="px-4 py-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium text-zinc-300 hover:text-white transition-colors disabled:opacity-50"
           >
             Export All
-          </button>
+          </Button>
         </div>
-        <p className="text-xs text-zinc-500">
+        <p className="text-[10px] font-mono tracking-widest uppercase text-zinc-500">
           Export uses current filters by default. Broad export requires confirmation.
         </p>
       </div>
 
       {exportError && (
-        <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+        <div className="rounded-none border-l-[2px] border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-[10px] font-mono text-rose-400 tracking-wide">
           {exportError}
         </div>
       )}

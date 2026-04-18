@@ -92,7 +92,6 @@ export default async function AppLayout({
       <div className="flex flex-col flex-1 min-w-0">
         <AppHeader 
           user={session.user} 
-          title="Dashboard"
         />
         <main className="flex-1 overflow-auto bg-zinc-950 p-6">{children}</main>
       </div>
