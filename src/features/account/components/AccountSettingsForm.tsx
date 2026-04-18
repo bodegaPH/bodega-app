@@ -63,10 +63,24 @@ export default function AccountSettingsForm({ user }: AccountSettingsFormProps) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="space-y-8">
+      {/* Global message banner at top */}
+      {message && (
+        <div
+          className={`px-4 py-3 text-[10px] font-mono uppercase tracking-widest border ${
+            message.type === "success"
+              ? "bg-emerald-950/30 text-emerald-400 border-emerald-500/30"
+              : "bg-rose-950/30 text-rose-400 border-rose-500/30"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
       {/* Name Field */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-2">
+        <label htmlFor="name" className="block text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2">
           Name
         </label>
         <input
@@ -75,13 +89,13 @@ export default function AccountSettingsForm({ user }: AccountSettingsFormProps) 
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-inner"
+          className="w-full px-4 py-3 bg-zinc-950 border border-white/10 rounded-none text-[12px] font-mono text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-none"
         />
       </div>
 
       {/* Email Field */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-2">
+        <label htmlFor="email" className="block text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2">
           Email
         </label>
         <input
@@ -90,14 +104,11 @@ export default function AccountSettingsForm({ user }: AccountSettingsFormProps) 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white font-mono text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-inner"
+          className="w-full px-4 py-3 bg-zinc-950 border border-white/10 rounded-none text-[12px] font-mono text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-none"
         />
         {isEmailChanged && (
-          <div className="mt-3 flex items-start gap-2 text-yellow-500/90 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
-            <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <p className="text-sm">
+          <div className="mt-3 bg-amber-500/5 border border-amber-500/20 p-3 rounded-none">
+            <p className="text-[9px] font-mono uppercase tracking-widest text-amber-500">
               Changing your email requires verifying your current password below.
             </p>
           </div>
@@ -107,8 +118,8 @@ export default function AccountSettingsForm({ user }: AccountSettingsFormProps) 
       {/* Current Password Field (shown when email is changed) */}
       {isEmailChanged && (
         <div className="animate-in fade-in slide-in-from-top-4 duration-300">
-          <label htmlFor="currentPassword" className="block text-sm font-medium text-zinc-300 mb-2">
-            Current Password <span className="text-rose-400">*</span>
+          <label htmlFor="currentPassword" className="block text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2">
+            Current Password <span className="text-rose-500">*</span>
           </label>
           <input
             type="password"
@@ -116,24 +127,13 @@ export default function AccountSettingsForm({ user }: AccountSettingsFormProps) 
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required={isEmailChanged}
-            placeholder="Enter your current password"
-            className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-inner"
+            placeholder="ENTER CURRENT PASSWORD"
+            className="w-full px-4 py-3 bg-zinc-950 border border-white/10 rounded-none text-[12px] font-mono text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-none"
           />
         </div>
       )}
 
-      {/* Message */}
-      {message && (
-        <div
-          className={`px-4 py-3 rounded-xl text-sm ${
-            message.type === "success"
-              ? "bg-emerald-500/10 text-emerald-200 border border-emerald-500/20"
-              : "bg-rose-500/10 text-rose-200 border border-rose-500/20"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
+
 
       {/* Submit Button */}
       <div className="flex justify-end pt-2">
@@ -144,6 +144,7 @@ export default function AccountSettingsForm({ user }: AccountSettingsFormProps) 
           Save Changes
         </Button>
       </div>
-    </form>
+      </form>
+    </div>
   );
 }
