@@ -98,6 +98,22 @@ model OrganizationInvitation {
   @@index([invitedEmail, status, createdAt])
 }
 
+model OperationIdempotency {
+  id             String   @id @default(cuid())
+  orgId          String
+  actorUserId    String
+  operation      String
+  idempotencyKey String
+  responseStatus Int
+  responseBody   Json
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
+
+  @@unique([orgId, actorUserId, operation, idempotencyKey])
+  @@index([expiresAt])
+  @@index([orgId, operation, createdAt])
+}
+
 model Membership {
   id            String        @id @default(cuid())
   userId        String
@@ -172,6 +188,16 @@ model Movement {
   @@index([orgId, locationId, createdAt])
   @@index([createdAt])
   @@index([type, createdAt])
+}
+
+model MovementExportThrottleEvent {
+  id        String   @id @default(cuid())
+  orgId     String
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@index([orgId, createdAt])
+  @@index([orgId, userId, createdAt])
 }
 
 model CurrentStock {

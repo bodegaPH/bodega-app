@@ -15,7 +15,10 @@ import {
 import { validateForMovement as validateItem } from "@/modules/items";
 import { validateForMovement as validateLocation } from "@/modules/locations";
 import { generateMovementCsv } from "./csv-generator";
-import { checkMovementExportRateLimit } from "./export-rate-limiter";
+import {
+  checkDurableMovementExportRateLimit,
+  checkMovementExportRateLimit,
+} from "./export-rate-limiter";
 import { MOVEMENT_EXPORT_SYNC_ROW_CAP, MOVEMENT_EXPORT_TIMEOUT_MS } from "./constants";
 import type {
   MovementDTO,
@@ -290,7 +293,17 @@ export async function exportMovementsCsv(
       throw new MovementExportRateLimitedError(rateLimitResult.retryAfterSeconds);
     }
 
+    const durableRateLimitResult = await checkDurableMovementExportRateLimit(orgId, userId);
+    if (!durableRateLimitResult.allowed) {
+      throw new MovementExportRateLimitedError(durableRateLimitResult.retryAfterSeconds);
+    }
+
     const filters = await validateExportFilters(orgId, payload.filters);
+
+    const matchingRows = await repo.countMovementsForExport(orgId, mode === "all" ? {} : filters);
+    if (matchingRows > MOVEMENT_EXPORT_SYNC_ROW_CAP) {
+      throw new MovementExportCapExceededError();
+    }
 
     const movements = await runWithTimeout(
       async (signal) => {

@@ -207,3 +207,43 @@ export async function expireStalePendingInvites(now: Date) {
     },
   });
 }
+
+export async function findOperationIdempotency(input: {
+  orgId: string;
+  actorUserId: string;
+  operation: string;
+  idempotencyKey: string;
+}) {
+  return prisma.operationIdempotency.findUnique({
+    where: {
+      orgId_actorUserId_operation_idempotencyKey: {
+        orgId: input.orgId,
+        actorUserId: input.actorUserId,
+        operation: input.operation,
+        idempotencyKey: input.idempotencyKey,
+      },
+    },
+  });
+}
+
+export async function createOperationIdempotency(input: {
+  orgId: string;
+  actorUserId: string;
+  operation: string;
+  idempotencyKey: string;
+  responseStatus: number;
+  responseBody: Prisma.InputJsonValue;
+  expiresAt: Date;
+}) {
+  return prisma.operationIdempotency.create({
+    data: {
+      orgId: input.orgId,
+      actorUserId: input.actorUserId,
+      operation: input.operation,
+      idempotencyKey: input.idempotencyKey,
+      responseStatus: input.responseStatus,
+      responseBody: input.responseBody,
+      expiresAt: input.expiresAt,
+    },
+  });
+}

@@ -4,6 +4,7 @@
  */
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { MOVEMENT_EXPORT_RATE_LIMITS } from "./constants";
 import type { CreateMovementInput, GetMovementsFilters } from "./types";
 
 type MovementExportQueryFilters = {
@@ -134,5 +135,145 @@ export async function listMovementsForExport(
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take,
+  });
+}
+
+export async function countMovementsForExport(orgId: string, filters: MovementExportQueryFilters) {
+  return prisma.movement.count({
+    where: buildMovementWhere(orgId, filters),
+  });
+}
+
+const MOVEMENT_EXPORT_THROTTLE_PRUNE_INTERVAL_MS = 60_000;
+const MOVEMENT_EXPORT_THROTTLE_RETENTION_MS =
+  Math.max(MOVEMENT_EXPORT_RATE_LIMITS.perUserPerOrg.windowMs, MOVEMENT_EXPORT_RATE_LIMITS.perOrg.windowMs) *
+  10;
+let lastMovementExportThrottlePruneAt = 0;
+
+function advisoryLockKey(input: string) {
+  return `movement_export_throttle:${input}`;
+}
+
+function computeRetryAfterSeconds(windowMs: number, oldestCreatedAt: Date | null, now: Date) {
+  if (!oldestCreatedAt) {
+    return Math.ceil(windowMs / 1000);
+  }
+
+  const resetAtMs = oldestCreatedAt.getTime() + windowMs;
+  return Math.max(1, Math.ceil((resetAtMs - now.getTime()) / 1000));
+}
+
+export async function checkAndRecordMovementExportThrottleEventAtomic(orgId: string, userId: string) {
+  const now = new Date();
+  const perUserWindowStart = new Date(
+    now.getTime() - MOVEMENT_EXPORT_RATE_LIMITS.perUserPerOrg.windowMs,
+  );
+  const perOrgWindowStart = new Date(now.getTime() - MOVEMENT_EXPORT_RATE_LIMITS.perOrg.windowMs);
+
+  return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`
+      SELECT pg_advisory_xact_lock(hashtext(${advisoryLockKey(`org:${orgId}`)}));
+    `;
+    await tx.$queryRaw`
+      SELECT pg_advisory_xact_lock(hashtext(${advisoryLockKey(`org:${orgId}:user:${userId}`)}));
+    `;
+
+    if (now.getTime() - lastMovementExportThrottlePruneAt >= MOVEMENT_EXPORT_THROTTLE_PRUNE_INTERVAL_MS) {
+      lastMovementExportThrottlePruneAt = now.getTime();
+      const pruneBefore = new Date(now.getTime() - MOVEMENT_EXPORT_THROTTLE_RETENTION_MS);
+      await tx.movementExportThrottleEvent.deleteMany({
+        where: {
+          createdAt: { lt: pruneBefore },
+        },
+      });
+    }
+
+    const [userAgg, orgAgg] = await Promise.all([
+      tx.movementExportThrottleEvent.aggregate({
+        where: {
+          orgId,
+          userId,
+          createdAt: { gte: perUserWindowStart },
+        },
+        _count: { _all: true },
+        _min: { createdAt: true },
+      }),
+      tx.movementExportThrottleEvent.aggregate({
+        where: {
+          orgId,
+          createdAt: { gte: perOrgWindowStart },
+        },
+        _count: { _all: true },
+        _min: { createdAt: true },
+      }),
+    ]);
+
+    const userCount = userAgg._count._all;
+    if (userCount >= MOVEMENT_EXPORT_RATE_LIMITS.perUserPerOrg.maxRequests) {
+      return {
+        allowed: false as const,
+        retryAfterSeconds: computeRetryAfterSeconds(
+          MOVEMENT_EXPORT_RATE_LIMITS.perUserPerOrg.windowMs,
+          userAgg._min.createdAt,
+          now,
+        ),
+      };
+    }
+
+    const orgCount = orgAgg._count._all;
+    if (orgCount >= MOVEMENT_EXPORT_RATE_LIMITS.perOrg.maxRequests) {
+      return {
+        allowed: false as const,
+        retryAfterSeconds: computeRetryAfterSeconds(
+          MOVEMENT_EXPORT_RATE_LIMITS.perOrg.windowMs,
+          orgAgg._min.createdAt,
+          now,
+        ),
+      };
+    }
+
+    await tx.movementExportThrottleEvent.create({
+      data: {
+        orgId,
+        userId,
+      },
+    });
+
+    return {
+      allowed: true as const,
+      retryAfterSeconds: 0,
+    };
+  });
+}
+
+export async function countMovementExportThrottleEventsByUser(
+  orgId: string,
+  userId: string,
+  since: Date,
+) {
+  return prisma.movementExportThrottleEvent.count({
+    where: {
+      orgId,
+      userId,
+      createdAt: { gte: since },
+    },
+  });
+}
+
+export async function countMovementExportThrottleEventsByOrg(orgId: string, since: Date) {
+  return prisma.movementExportThrottleEvent.count({
+    where: {
+      orgId,
+      createdAt: { gte: since },
+    },
+  });
+}
+
+export async function recordMovementExportThrottleEvent(orgId: string, userId: string) {
+  return prisma.movementExportThrottleEvent.create({
+    data: {
+      orgId,
+      userId,
+    },
   });
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getSupportCode, logOpEvent, resolveRequestId } from "@/lib/op-events";
 import {
   exportMovementsCsv,
   InvalidMovementExportFiltersError,
@@ -15,9 +16,20 @@ import {
 const NON_ENUMERATING_MESSAGE = "Not found";
 
 export async function POST(request: Request) {
+  const requestId = resolveRequestId(request.headers);
+  const startedAt = Date.now();
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.json({ error: { message: "Unauthorized" } }, { status: 401 });
+    return NextResponse.json(
+      {
+        error: {
+          message: "Unauthorized",
+          supportCode: getSupportCode("movement.export", "UNAUTHORIZED"),
+          requestId,
+        },
+      },
+      { status: 401 },
+    );
   }
 
   let body: unknown;
@@ -25,14 +37,28 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: { code: "INVALID_FILTERS", message: "Invalid JSON body" } },
+      {
+        error: {
+          code: "INVALID_FILTERS",
+          message: "Invalid JSON body",
+          supportCode: getSupportCode("movement.export", "INVALID_FILTERS"),
+          requestId,
+        },
+      },
       { status: 400 },
     );
   }
 
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return NextResponse.json(
-      { error: { code: "INVALID_FILTERS", message: "Invalid request body" } },
+      {
+        error: {
+          code: "INVALID_FILTERS",
+          message: "Invalid request body",
+          supportCode: getSupportCode("movement.export", "INVALID_FILTERS"),
+          requestId,
+        },
+      },
       { status: 400 },
     );
   }
@@ -42,7 +68,14 @@ export async function POST(request: Request) {
   const orgIdFromBody = (body as { orgId?: unknown }).orgId;
   if (typeof orgIdFromBody !== "string" || !orgIdFromBody.trim()) {
     return NextResponse.json(
-      { error: { code: "INVALID_FILTERS", message: "orgId is required" } },
+      {
+        error: {
+          code: "INVALID_FILTERS",
+          message: "orgId is required",
+          supportCode: getSupportCode("movement.export", "INVALID_FILTERS"),
+          requestId,
+        },
+      },
       { status: 400 },
     );
   }
@@ -60,7 +93,16 @@ export async function POST(request: Request) {
   });
 
   if (!membership || (membership.role !== "ORG_ADMIN" && membership.role !== "ORG_USER")) {
-    return NextResponse.json({ error: { message: NON_ENUMERATING_MESSAGE } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          message: NON_ENUMERATING_MESSAGE,
+          supportCode: getSupportCode("movement.export", "NOT_FOUND"),
+          requestId,
+        },
+      },
+      { status: 404 },
+    );
   }
 
   try {
@@ -68,6 +110,15 @@ export async function POST(request: Request) {
       mode: payload.mode as MovementExportRequest["mode"],
       filters: payload.filters,
       confirmedAll: payload.confirmedAll,
+    });
+
+    logOpEvent({
+      requestId,
+      orgId: normalizedOrgId,
+      actorUserId: session.user.id,
+      event: "movement.export",
+      result: "success",
+      durationMs: Date.now() - startedAt,
     });
 
     return new Response(result.content, {
@@ -78,34 +129,95 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    const actorUserId = session.user.id;
+    const orgId = normalizedOrgId;
     if (error instanceof InvalidMovementExportFiltersError) {
+      logOpEvent({
+        requestId,
+        orgId,
+        actorUserId,
+        event: "movement.export",
+        result: "error",
+        errorCode: error.code,
+        durationMs: Date.now() - startedAt,
+      });
       return NextResponse.json(
-        { error: { code: error.code, message: error.message } },
+        {
+          error: {
+            code: error.code,
+            message: error.message,
+            supportCode: getSupportCode("movement.export", error.code),
+            requestId,
+          },
+        },
         { status: error.status },
       );
     }
 
     if (error instanceof MovementExportCapExceededError) {
+      logOpEvent({
+        requestId,
+        orgId,
+        actorUserId,
+        event: "movement.export",
+        result: "error",
+        errorCode: error.code,
+        durationMs: Date.now() - startedAt,
+      });
       return NextResponse.json(
-        { error: { code: error.code, message: error.message } },
+        {
+          error: {
+            code: error.code,
+            message: error.message,
+            supportCode: getSupportCode("movement.export", error.code),
+            requestId,
+          },
+        },
         { status: error.status },
       );
     }
 
     if (error instanceof MovementExportTimeoutError) {
+      logOpEvent({
+        requestId,
+        orgId,
+        actorUserId,
+        event: "movement.export",
+        result: "error",
+        errorCode: error.code,
+        durationMs: Date.now() - startedAt,
+      });
       return NextResponse.json(
-        { error: { code: error.code, message: error.message } },
+        {
+          error: {
+            code: error.code,
+            message: error.message,
+            supportCode: getSupportCode("movement.export", error.code),
+            requestId,
+          },
+        },
         { status: error.status },
       );
     }
 
     if (error instanceof MovementExportRateLimitedError) {
+      logOpEvent({
+        requestId,
+        orgId,
+        actorUserId,
+        event: "movement.export",
+        result: "error",
+        errorCode: error.code,
+        durationMs: Date.now() - startedAt,
+      });
       return NextResponse.json(
         {
           error: {
             code: error.code,
             message: error.message,
             retryAfterSeconds: error.retryAfterSeconds,
+            supportCode: getSupportCode("movement.export", error.code),
+            requestId,
           },
         },
         {
@@ -119,8 +231,25 @@ export async function POST(request: Request) {
       ? error
       : new MovementExportServerError();
 
+    logOpEvent({
+      requestId,
+      orgId,
+      actorUserId,
+      event: "movement.export",
+      result: "error",
+      errorCode: fallback.code,
+      durationMs: Date.now() - startedAt,
+    });
+
     return NextResponse.json(
-      { error: { code: fallback.code, message: fallback.message } },
+      {
+        error: {
+          code: fallback.code,
+          message: fallback.message,
+          supportCode: getSupportCode("movement.export", fallback.code),
+          requestId,
+        },
+      },
       { status: fallback.status },
     );
   }

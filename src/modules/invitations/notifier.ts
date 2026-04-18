@@ -16,6 +16,7 @@ export type InvitationNotificationPayload = {
   role: MembershipRole;
   token: string;
   expiresAt: Date;
+  requestId?: string;
 };
 
 export interface InvitationNotifier {
@@ -34,6 +35,7 @@ const MAILJET_TIMEOUT_MS = 10_000;
 class DevInvitationNotifier implements InvitationNotifier {
   async notifyInvitation(payload: InvitationNotificationPayload): Promise<InvitationDeliveryResult> {
     console.info("[invites] simulated delivery", {
+      requestId: payload.requestId,
       invitationId: payload.invitationId,
       orgId: payload.orgId,
       invitedEmail: payload.invitedEmail,
@@ -85,6 +87,11 @@ class MailjetInvitationNotifier implements InvitationNotifier {
               TextPart: `You were invited to join an organization on Bodega as ${payload.role}. Accept invite: ${inviteUrl}. This invite expires at ${expiresAtText}.`,
               HTMLPart: `<p>You were invited to join an organization on <strong>Bodega</strong> as <strong>${payload.role}</strong>.</p><p><a href="${inviteUrl}">Accept invitation</a></p><p>This invite expires at ${expiresAtText}.</p>`,
               CustomID: payload.invitationId,
+              Headers: payload.requestId
+                ? {
+                    "X-Request-Id": payload.requestId,
+                  }
+                : undefined,
             },
           ],
         }),

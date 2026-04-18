@@ -1,4 +1,7 @@
 import { MOVEMENT_EXPORT_RATE_LIMITS } from "./constants";
+import {
+  checkAndRecordMovementExportThrottleEventAtomic,
+} from "./repository";
 
 type Bucket = {
   count: number;
@@ -73,6 +76,10 @@ export function checkMovementExportRateLimit(orgId: string, userId: string) {
   );
 
   return orgResult;
+}
+
+export async function checkDurableMovementExportRateLimit(orgId: string, userId: string) {
+  return checkAndRecordMovementExportThrottleEventAtomic(orgId, userId);
 }
 
 export function resetMovementExportRateLimiterForTests() {

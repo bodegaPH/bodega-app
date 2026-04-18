@@ -212,6 +212,7 @@ export async function createInvitation(input: CreateInvitationInput): Promise<Cr
   try {
     const notifier = getInvitationNotifier();
     delivery = await notifier.notifyInvitation({
+      requestId: input.requestId,
       invitationId: invitation.id,
       orgId: invitation.orgId,
       inviterUserId: invitation.inviterUserId,
@@ -261,7 +262,11 @@ export async function createInvitation(input: CreateInvitationInput): Promise<Cr
   };
 }
 
-export async function resendInvitation(orgId: string, inviteId: string): Promise<CreateInvitationResult> {
+export async function resendInvitation(
+  orgId: string,
+  inviteId: string,
+  requestId?: string,
+): Promise<CreateInvitationResult> {
   const validatedOrgId = requireId(orgId, "Organization ID is required");
   const validatedInviteId = requireId(inviteId, "Invitation ID is required");
 
@@ -296,6 +301,7 @@ export async function resendInvitation(orgId: string, inviteId: string): Promise
   try {
     const notifier = getInvitationNotifier();
     delivery = await notifier.notifyInvitation({
+      requestId,
       invitationId: updated.id,
       orgId: updated.orgId,
       inviterUserId: updated.inviterUserId,
