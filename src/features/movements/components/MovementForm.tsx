@@ -38,10 +38,7 @@ export default function MovementForm({
     // Pre-select default location
     const defaultLocation = locations.find((loc) => loc.isDefault);
     setLocationId(defaultLocation?.id ?? locations[0]?.id ?? "");
-
-    // Pre-select item if provided
     setItemId(preselectedItemId ?? "");
-
     setType("RECEIVE");
     setQuantity("");
     setReason("");

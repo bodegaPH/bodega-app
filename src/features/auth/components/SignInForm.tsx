@@ -80,7 +80,7 @@ export default function SignInForm() {
 
       <div className="mb-10">
         <span className="text-[10px] uppercase tracking-[0.2em] text-indigo-500 font-mono block mb-3">
-          // SECURE UPLINK
+          {"// SECURE UPLINK"}
         </span>
         <h2 className="text-3xl font-sans font-bold text-white uppercase tracking-tight leading-[1.05] mb-2">
           Sign In

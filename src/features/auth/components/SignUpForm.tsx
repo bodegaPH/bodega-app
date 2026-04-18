@@ -113,7 +113,7 @@ export default function SignUpForm() {
 
       <div className="mb-10">
         <span className="text-[10px] uppercase tracking-[0.2em] text-indigo-500 font-mono block mb-3">
-          // NEW OPERATOR INITIALIZATION
+          {"// NEW OPERATOR INITIALIZATION"}
         </span>
         <h2 className="text-3xl font-sans font-bold text-white uppercase tracking-tight leading-[1.05] mb-2">
           Create Account

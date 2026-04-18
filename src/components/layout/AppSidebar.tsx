@@ -9,7 +9,6 @@ import {
   TokensIcon as Package,
   UpdateIcon as ArrowLeftRight,
   TargetIcon as MapPin,
-  ChevronDownIcon as ChevronDown,
   CaretSortIcon as ChevronsUpDown,
   MixerHorizontalIcon as Settings2,
   BoxModelIcon as Building2,
