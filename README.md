@@ -28,8 +28,6 @@
 
 Bodega is an enterprise-grade, highly structured inventory and supply chain tracking application. Built around strict role-based access control and immutable transaction logs, it is designed for precision, auditability, and speed.
 
-Our frontend utilizes a distinct **"System Matrix" brutalist aesthetic**: tactical, dense, high-contrast interfaces designed for monitoring operations like a command center.
-
 ## 🛠️ Architecture & Core Concepts
 
 Bodega strictly enforces a clean, layered architecture separating business logic from presentation:
@@ -60,13 +58,30 @@ Bodega strictly enforces a clean, layered architecture separating business logic
 ## 📂 Project Structure
 
 ```text
-├── prisma/                 # Database schema and migrations
+├── prisma/
+│   ├── schema.prisma       # Database schema definition
+│   └── migrations/         # SQL migration history
 ├── src/
-│   ├── app/                # Next.js App Router (Pages, Layouts, API Routes)
+│   ├── app/                # Next.js App Router
+│   │   ├── (app)/          # Authenticated routes group
+│   │   ├── admin/          # Platform Admin dashboard
+│   │   ├── api/            # Route handlers (REST endpoints)
+│   │   └── auth/           # Login/authentication pages
 │   ├── components/         # Global shared UI components
-│   ├── features/           # Feature-specific UI components and Server Actions
-│   ├── lib/                # Shared utilities and configurations
-│   └── modules/            # Core business logic and database repositories
+│   │   ├── layout/         # AppHeader, Sidebars
+│   │   └── ui/             # Reusable base primitives
+│   ├── features/           # Feature-scoped presentation
+│   │   └── [domain]/       # E.g., `movements`, `items`, `admin`
+│   │       ├── components/ # React UI components
+│   │       ├── actions/    # Next.js server actions ("use server")
+│   │       └── server.ts   # Re-exports from `src/modules`
+│   ├── lib/                # Cross-cutting utilities (auth, errors, formatters)
+│   └── modules/            # Core business domain logic
+│       └── [domain]/       # E.g., `movements`, `inventory`, `invitations`
+│           ├── repository.ts # Direct Prisma queries (Private)
+│           ├── service.ts    # Business logic & validation (Public API)
+│           └── types.ts      # DTOs and internal types
+└── .env.example            # Environment variables template
 ```
 
 ---
@@ -113,5 +128,3 @@ Bodega strictly enforces a clean, layered architecture separating business logic
 ## 📜 Legal & License
 
 © 2026 Bodega Logistics. All Rights Reserved. Not for public distribution.
-
-> > > > > > > Stashed changes
