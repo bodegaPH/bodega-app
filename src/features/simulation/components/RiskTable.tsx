@@ -1,4 +1,3 @@
-"use client";
 
 import { MagicWandIcon } from "@radix-ui/react-icons";
 import { type SimulationSnapshotDTO } from "../server";
@@ -69,12 +68,13 @@ export default function RiskTable({ snapshots }: RiskTableProps) {
                     <span className="text-emerald-400/80">{Math.round(snapshot.p90EndingStock)}</span>
                   </td>
                   <td className="px-4 py-3 text-right text-[10px] font-mono text-zinc-500">
-                    {new Date(snapshot.generatedAt).toLocaleString(undefined, {
+                    {new Intl.DateTimeFormat("en-US", {
                       month: "short",
                       day: "numeric",
                       hour: "numeric",
-                      minute: "2-digit"
-                    })}
+                      minute: "2-digit",
+                      hour12: true,
+                    }).format(new Date(snapshot.generatedAt))}
                   </td>
                 </tr>
               ))}

@@ -105,7 +105,7 @@ export default function SignUpForm() {
   };
 
   return (
-    <div className="relative border border-white/10 p-8 sm:p-10 bg-zinc-950/80 w-full shadow-2xl backdrop-blur-sm">
+    <div className="relative border border-white/10 p-8 sm:p-10 bg-zinc-950 w-full">
       <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/40" />
       <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/40" />
       <span className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/40" />
@@ -124,7 +124,7 @@ export default function SignUpForm() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-200 text-sm font-mono flex items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+        <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-200 text-xs font-mono flex items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
           <span className="font-bold mr-2">[ERROR]</span> {error}
         </div>
       )}
@@ -143,7 +143,7 @@ export default function SignUpForm() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="block w-full pl-10 pr-4 py-2.5 bg-zinc-900/40 border border-white/10 rounded-none text-sm text-white placeholder-zinc-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-zinc-900 transition-all duration-300 hover:border-white/20"
+              className="block w-full pl-10 pr-4 py-2.5 bg-black border border-white/10 rounded-none text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:bg-zinc-950 transition-colors duration-200 hover:border-white/20"
               placeholder="John Doe"
             />
           </div>
@@ -162,7 +162,7 @@ export default function SignUpForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="block w-full pl-10 pr-4 py-2.5 bg-zinc-900/40 border border-white/10 rounded-none text-sm text-white placeholder-zinc-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-zinc-900 transition-all duration-300 hover:border-white/20"
+              className="block w-full pl-10 pr-4 py-2.5 bg-black border border-white/10 rounded-none text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:bg-zinc-950 transition-colors duration-200 hover:border-white/20"
               placeholder="operator@company.com"
             />
           </div>
@@ -183,7 +183,7 @@ export default function SignUpForm() {
               required
               minLength={12}
               maxLength={72}
-              className="block w-full pl-10 pr-4 py-2.5 bg-zinc-900/40 border border-white/10 rounded-none text-sm text-white placeholder-zinc-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-zinc-900 transition-all duration-300 hover:border-white/20"
+              className="block w-full pl-10 pr-4 py-2.5 bg-black border border-white/10 rounded-none text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:bg-zinc-950 transition-colors duration-200 hover:border-white/20"
               placeholder="••••••••••••"
             />
           </div>
@@ -195,7 +195,7 @@ export default function SignUpForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-2.5 border border-transparent rounded-none font-mono text-sm uppercase tracking-tight font-bold text-zinc-950 bg-indigo-500 hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-zinc-950 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-300 mt-6 shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)]"
+          className="w-full flex items-center justify-center gap-2 py-2.5 border border-indigo-500 rounded-none font-mono text-sm uppercase tracking-widest font-bold text-white bg-indigo-500 hover:bg-indigo-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 mt-6"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

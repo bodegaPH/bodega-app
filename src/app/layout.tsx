@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Bodega",
   description: "Inventory management for modern teams",
+  icons: {
+    icon: "/bodega-logo.svg",
+    shortcut: "/bodega-logo.svg",
+    apple: "/bodega-logo.svg",
+  },
 };
 
 export default function RootLayout({
