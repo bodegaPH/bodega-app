@@ -15,6 +15,7 @@ import {
   CheckIcon as Check,
   PlusIcon as Plus,
   MagicWandIcon,
+  FileTextIcon,
 } from "@radix-ui/react-icons";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -350,7 +351,16 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
         ))}
       </nav>
 
-      {/* Bottom User Area if needed, or leave clean */}
+      {/* Bottom Action Area */}
+      <div className="shrink-0 p-4 border-t border-white/10">
+        <Link
+          href="#"
+          className="flex items-center gap-3 pl-[5px] pr-3 py-2.5 rounded-none text-[12px] font-mono uppercase tracking-wide transition-all group border-l-[3px] border-transparent text-zinc-500 hover:text-white hover:bg-white/5"
+        >
+          <FileTextIcon className="w-4 h-4 shrink-0 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
+          <span>Documentation</span>
+        </Link>
+      </div>
     </aside>
   );
 }
