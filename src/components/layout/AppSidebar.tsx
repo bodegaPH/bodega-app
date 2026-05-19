@@ -50,9 +50,7 @@ const navGroups = [
   },
   {
     header: "INTELLIGENCE",
-    items: [
-      { label: "Simulation", href: "/simulation", icon: MagicWandIcon },
-    ],
+    items: [{ label: "Simulation", href: "/simulation", icon: MagicWandIcon }],
   },
   {
     header: "SYSTEM",
@@ -156,11 +154,11 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
       >
         {/* Logo Pane */}
         <div className="w-16 h-full shrink-0 flex items-center justify-center border-r border-white/10">
-          <Image 
-            src="/bodega-logo.svg" 
-            alt="Bodega" 
-            width={24} 
-            height={24} 
+          <Image
+            src="/bodega-logo.svg"
+            alt="Bodega"
+            width={24}
+            height={24}
             className="w-6 h-6"
             priority
           />
@@ -183,9 +181,7 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
               {activeOrg.name}
             </span>
           </div>
-          <ChevronsUpDown 
-            className="w-4 h-4 text-zinc-500 shrink-0 ml-2" 
-          />
+          <ChevronsUpDown className="w-4 h-4 text-zinc-500 shrink-0 ml-2" />
         </button>
 
         {/* Org Switcher Dropdown */}
@@ -211,17 +207,13 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <Building2 
-                          className="w-4 h-4 shrink-0 opacity-50" 
-                        />
+                        <Building2 className="w-4 h-4 shrink-0 opacity-50" />
                         <span className="text-[12px] font-mono uppercase tracking-wider truncate">
                           {org.name}
                         </span>
                       </div>
                       {org.id === activeOrg.id && (
-                        <Check 
-                          className="w-3.5 h-3.5 shrink-0 text-indigo-400" 
-                        />
+                        <Check className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
                       )}
                     </button>
                   ))}
@@ -239,9 +231,7 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
                 }}
                 className="w-full flex items-center gap-2 px-2 py-2 rounded-none text-left hover:bg-zinc-800 text-zinc-300 transition-colors border border-dashed border-white/10 hover:border-indigo-500/50 group"
               >
-                <Plus 
-                  className="w-3.5 h-3.5 shrink-0 text-zinc-500 group-hover:text-indigo-400"
-                />
+                <Plus className="w-3.5 h-3.5 shrink-0 text-zinc-500 group-hover:text-indigo-400" />
                 <span className="text-[10px] font-mono uppercase tracking-[0.1em] group-hover:text-white">
                   Create Organization
                 </span>
@@ -264,7 +254,8 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
                   htmlFor="orgName"
                   className="block text-[10px] font-mono tracking-widest text-zinc-500 uppercase mb-2"
                 >
-                  <span className="text-indigo-500 mr-1">*</span> Organization Name
+                  <span className="text-indigo-500 mr-1">*</span> Organization
+                  Name
                 </label>
                 <input
                   type="text"
@@ -354,7 +345,7 @@ export default function AppSidebar({ activeOrg, userOrgs }: AppSidebarProps) {
       {/* Bottom Action Area */}
       <div className="shrink-0 p-4 border-t border-white/10">
         <Link
-          href="#"
+          href="https://bodega-website-six.vercel.app/docs"
           className="flex items-center gap-3 pl-[5px] pr-3 py-2.5 rounded-none text-[12px] font-mono uppercase tracking-wide transition-all group border-l-[3px] border-transparent text-zinc-500 hover:text-white hover:bg-white/5"
         >
           <FileTextIcon className="w-4 h-4 shrink-0 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
