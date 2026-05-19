@@ -41,37 +41,64 @@ export default async function OnboardingLayout({
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-zinc-950 relative overflow-hidden p-4">
-      {/* Cinematic Background Atmosphere */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-indigo-900/20 blur-[150px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] rounded-full bg-blue-900/20 blur-[150px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
-      </div>
+    <div className="min-h-screen w-full flex flex-col justify-between items-center bg-black text-white selection:bg-indigo-500/30 relative overflow-x-hidden">
+      {/* Grid Overlay Backdrop */}
+      <div 
+        className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+        style={{ 
+          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 1) 1px, transparent 1px)', 
+          backgroundSize: '32px 32px' 
+        }} 
+      />
+      
+      {/* Central Breathing Ambient Indigo Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[8000ms]" />
 
-      {/* Brand Logo (Top Left) */}
-      <div className="absolute top-8 left-8 z-50 flex items-center gap-3">
-        <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 shadow-lg ring-1 ring-white/20">
-          <div className="absolute inset-0 bg-indigo-500/20 rounded-xl blur-md" />
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-6 h-6 relative z-10">
-            <path
-              d="M5 4h9l6 4.5-4 3.5 4 3.5-6 4.5H5z"
-              strokeWidth="3.5"
-              strokeLinejoin="miter"
-              strokeLinecap="square"
-              className="text-white"
-            />
-          </svg>
+      {/* Header System Bar */}
+      <header className="w-full max-w-7xl px-8 py-6 flex items-center justify-between border-b border-white/[0.04] relative z-10 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 flex items-center justify-center bg-zinc-950 border border-white/10">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-indigo-500">
+              <path
+                d="M5 4h9l6 4.5-4 3.5 4 3.5-6 4.5H5z"
+                strokeWidth="3.5"
+                strokeLinejoin="miter"
+                strokeLinecap="square"
+              />
+            </svg>
+          </div>
+          <span className="text-xs font-bold tracking-[0.2em] text-white uppercase">
+            Bodega
+          </span>
         </div>
-        <span className="text-xl font-bold tracking-[0.1em] text-white/90 drop-shadow-sm uppercase">
-          BODEGA
-        </span>
-      </div>
+        <div className="hidden sm:flex items-center gap-6">
+          <span className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping" />
+            System: Setup mode
+          </span>
+          <span>v2.4.0-matrix</span>
+        </div>
+      </header>
 
-      {/* Main Content Card */}
-      <div className="relative z-10 w-full max-w-md rounded-[2rem] bg-zinc-900/40 backdrop-blur-3xl border border-white/5 shadow-2xl overflow-hidden ring-1 ring-white/10 p-8 sm:p-12">
+      {/* Main Centered Content Area */}
+      <main className="flex-1 flex flex-col justify-center items-center w-full max-w-7xl px-4 py-12 relative z-10">
         {children}
-      </div>
+      </main>
+
+      {/* Footer System Bar */}
+      <footer className="w-full max-w-7xl px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-white/[0.04] relative z-10 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+        <div>
+          <span>SECURE LINK // TLS_AES_256_GCM</span>
+        </div>
+        <div className="flex items-center gap-6">
+          <a 
+            href="#" 
+            className="hover:text-indigo-400 border border-transparent hover:border-indigo-500/20 px-2 py-0.5 transition-colors group flex items-center gap-1.5"
+          >
+            <span>[DOCUMENTATION]</span>
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
